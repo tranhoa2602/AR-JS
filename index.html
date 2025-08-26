@@ -133,10 +133,16 @@
   <body>
     <div class="wrap">
       <div id="notice" class="notice hidden">🔎 Đang kiểm tra hỗ trợ AR…</div>
+
+      <!-- model-viewer:
+         - ar-scale="auto" cho phép pinch để phóng to/thu nhỏ trong AR.
+         - ar-placement="floor" cho phép đặt trên mặt phẳng và tap để di chuyển.
+         - camera-controls cho phép xoay/zoom trong trình xem 3D trên web.
+    -->
       <model-viewer
         id="mv"
         src="https://modelviewer.dev/shared-assets/models/RobotExpressive.glb"
-        ios-src="https://github.com/tranhoa2602/AR-JS/blob/main/Kawasaki_Ninja_H2.usdz"
+        ios-src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/Kawasaki_Ninja_H2.usdz"
         alt="Robot Expressive"
         ar
         ar-modes="webxr scene-viewer quick-look"
@@ -155,6 +161,14 @@
           🚀 Xem trong AR
         </button>
       </model-viewer>
+
+      <!-- (Tùy chọn) Quick Look Call-to-Action -->
+      <!--
+    <a rel="ar" id="Kenh14Btn"
+       href="https://raw.githubusercontent.com/zonbita/AR-JS/main/module.usdz#callToAction=Visit%20Kenh14.vn&checkoutTitle=Kenh14.vn&checkoutSubtitle=Tap%20to%20open&callToActionURL=https://kenh14.vn">
+      <img src="https://raw.githubusercontent.com/zonbita/AR-JS/button.png" alt="Kenh14.vn">
+    </a>
+    -->
 
       <!-- Audio controls -->
       <div class="audio-controls" id="audioControls" aria-hidden="false">
