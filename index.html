@@ -111,16 +111,13 @@
           if (mv.play) mv.play();
         }
       });
-
       mv.addEventListener("ar-status", (e) => {
         if (e.detail.status === "not-presenting") {
           crySound.pause();
           crySound.currentTime = 0;
-          tapNotice.style.display = "block"; // hiển thị overlay trở lại
+          tapNotice.style.display = "block";
         }
       });
-
-      // Dừng nhạc khi tab ẩn
       document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
           crySound.pause();
