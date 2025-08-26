@@ -1,424 +1,123 @@
 <!DOCTYPE html>
 <html lang="vi">
   <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width,initial-scale=1,viewport-fit=cover"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <meta name="theme-color" content="#0b0c10" />
-    <title>AR Model — Move & Pinch</title>
-
-    <!-- model-viewer -->
+    <title>AR + Âm thanh</title>
     <script
       type="module"
       src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
     ></script>
-
     <style>
-      :root {
-        color-scheme: dark;
-      }
       html,
       body {
-        height: 100%;
         margin: 0;
+        height: 100%;
         background: #0b0c10;
         color: #fff;
-        font-family: system-ui, -apple-system, Roboto, "Segoe UI", Arial;
-      }
-      .wrap {
-        position: relative;
-        height: 100vh;
-        overflow: hidden;
       }
       model-viewer {
         width: 100%;
         height: 100%;
-        display: block;
-        background: #0b0c10;
-        --poster-color: #0b0c10;
       }
-      /* AR button */
+
       button[slot="ar-button"] {
         position: absolute;
         bottom: 20px;
         left: 50%;
         transform: translateX(-50%);
-        padding: 12px 72px;
-        font-size: 15px;
-        font-weight: 600;
-        border-radius: 12px;
+        padding: 12px 32px;
         border: none;
-        cursor: pointer;
+        border-radius: 12px;
         background: #ffe66d;
-        color: #1b1e23;
-        box-shadow: 0 6px 20px rgba(255, 230, 109, 0.35);
-        z-index: 60;
-      }
-      button[slot="ar-button"]:active {
-        transform: translateX(-50%) scale(0.97);
-      }
-      /* audio controls */
-      .audio-controls {
-        position: absolute;
-        bottom: 92px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        background: rgba(255, 255, 255, 0.04);
-        padding: 6px 10px;
-        border-radius: 999px;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        z-index: 60;
-      }
-      .audio-controls button {
-        background: transparent;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        color: #fff;
-        padding: 6px 10px;
-        border-radius: 8px;
+        color: #000;
+        font-weight: 600;
         cursor: pointer;
+        z-index: 10;
       }
-      .notice {
+
+      /* Nút phát âm thanh trong AR */
+      .ar-audio-btn {
         position: absolute;
-        top: 12px;
+        bottom: 80px;
         left: 50%;
         transform: translateX(-50%);
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        padding: 8px 12px;
-        border-radius: 10px;
-        z-index: 60;
-        font-size: 13px;
-      }
-      .hidden {
-        display: none !important;
-      }
-      .hint {
-        position: absolute;
-        right: 12px;
-        bottom: 12px;
-        background: rgba(255, 255, 255, 0.04);
-        padding: 8px 10px;
-        border-radius: 8px;
-        font-size: 12px;
-        z-index: 60;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        color: #ddd;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 12px;
+        background: #ff4d4f;
+        color: #fff;
+        font-size: 15px;
+        cursor: pointer;
+        display: none;
+        z-index: 10;
       }
     </style>
   </head>
   <body>
-    <div class="wrap">
-      <div id="notice" class="notice hidden">🔎 Kiểm tra AR...</div>
+    <model-viewer
+      id="mv"
+      src="https://modelviewer.dev/shared-assets/models/RobotExpressive.glb"
+      ios-src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/Chibi_Ripper.usdz"
+      ar
+      ar-modes="webxr scene-viewer quick-look"
+      camera-controls
+      ar-scale="fixed"
+      alt="Robot Expressive"
+    >
+      <button slot="ar-button">🚀 Xem trong AR</button>
+    </model-viewer>
 
-      <!-- model-viewer:
-         - ar-scale="auto" để cho phép pinch trong AR.
-         - ar-placement="floor" để tap đặt model trên mặt phẳng.
-         - scale="0.18 0.18 0.18" làm model nhỏ khi xuất hiện. (chỉnh theo muốn)
-    -->
-      <model-viewer
-        id="mv"
-        src="https://modelviewer.dev/shared-assets/models/RobotExpressive.glb"
-        ios-src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/Chibi_Ripper.usdz"
-        alt="Model của bạn"
-        ar
-        ar-modes="webxr scene-viewer quick-look"
-        ar-scale="auto"
-        ar-placement="floor"
-        camera-controls
-        exposure="1"
-        shadow-intensity="1"
-        shadow-softness="0.6"
-        autoplay
-        tone-mapping="aces"
-        interaction-prompt="auto"
-        reveal="interaction"
-        scale="0.18 0.18 0.18"
-        camera-orbit="0deg 75deg 2.2m"
-      >
-        <button slot="ar-button" id="arBtn" aria-label="Mở AR">
-          🚀 Xem trong AR
-        </button>
-      </model-viewer>
+    <!-- Nút phát âm thanh trong AR -->
+    <button id="arAudioBtn" class="ar-audio-btn">
+      🔊 Bật tiếng em bé khóc
+    </button>
 
-      <div class="audio-controls" id="audioControls">
-        <button id="playBtn">▶️ Play nhạc</button>
-        <button id="pauseBtn">⏸️ Pause</button>
-        <span
-          id="audioState"
-          style="font-size: 13px; opacity: 0.95; margin-left: 6px"
-          >Tắt</span
-        >
-      </div>
-
-      <div class="hint">
-        Hướng dẫn: pinch để phóng to/thu nhỏ (AR/Web), chạm & vuốt để xoay/di
-        chuyển góc nhìn (trong web). Tap để đặt model trên mặt phẳng khi vào AR.
-      </div>
-    </div>
-
-    <!-- NHẠC: đổi đường dẫn music.mp3 nếu cần -->
-    <audio id="bgm" src="music.mp3" preload="auto" loop></audio>
+    <audio
+      id="crySound"
+      src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+      preload="auto"
+    ></audio>
 
     <script>
-      (function () {
-        const mv = document.getElementById("mv");
-        const bgm = document.getElementById("bgm");
-        const notice = document.getElementById("notice");
-        const arBtn = document.getElementById("arBtn");
-        const playBtn = document.getElementById("playBtn");
-        const pauseBtn = document.getElementById("pauseBtn");
-        const audioState = document.getElementById("audioState");
+      const mv = document.getElementById("mv");
+      const crySound = document.getElementById("crySound");
+      const arAudioBtn = document.getElementById("arAudioBtn");
 
-        const isSecure = () =>
-          location.protocol === "https:" || location.hostname === "localhost";
-        const isIOS = () =>
-          /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-        function show(msg, ms = 2200) {
-          notice.textContent = msg;
-          notice.classList.remove("hidden");
-          clearTimeout(show._t);
-          show._t = setTimeout(() => notice.classList.add("hidden"), ms);
+      // Hiện nút khi vào AR (chỉ với WebXR)
+      mv.addEventListener("ar-status", (e) => {
+        if (e.detail.status === "session-started") {
+          if (!isIOS()) {
+            // Android WebXR
+            arAudioBtn.style.display = "block";
+          } else {
+            alert(
+              "⚠️ Trên iPhone (Quick Look) không thể thêm nút phát âm thanh ngoài model."
+            );
+          }
+        } else if (e.detail.status === "not-presenting") {
+          arAudioBtn.style.display = "none";
+          crySound.pause();
+          crySound.currentTime = 0;
         }
+      });
 
-        if (!isSecure()) {
-          show("⚠️ Chạy trên HTTPS hoặc localhost để dùng AR.");
+      // Nút bấm phát tiếng em bé
+      arAudioBtn.addEventListener("click", () => {
+        if (crySound.paused) {
+          crySound.play();
+          arAudioBtn.textContent = "⏸️ Tắt tiếng em bé";
         } else {
-          show("🔎 Kiểm tra WebXR support…", 1200);
+          crySound.pause();
+          crySound.currentTime = 0;
+          arAudioBtn.textContent = "🔊 Bật tiếng em bé khóc";
         }
-
-        // --- Audio controls ---
-        function setAudioState(text) {
-          audioState.textContent = text;
-        }
-        playBtn.addEventListener("click", async () => {
-          try {
-            await bgm.play();
-            setAudioState("Đang phát");
-          } catch {
-            setAudioState("Bị chặn");
-          }
-        });
-        pauseBtn.addEventListener("click", () => {
-          bgm.pause();
-          setAudioState("Tạm dừng");
-        });
-
-        // Khi bấm AR: cố gắng play trên gesture
-        arBtn.addEventListener("click", async () => {
-          try {
-            await bgm.play();
-            setAudioState("Đang phát");
-          } catch (e) {
-            setAudioState("Bị chặn");
-            if (isIOS())
-              show("📲 iOS Quick Look có giới hạn âm thanh trong AR.", 4200);
-          }
-          // model-viewer tự mở AR sau click
-        });
-
-        // Khi session AR thay đổi: play/dừng tương ứng
-        mv.addEventListener("ar-status", (e) => {
-          const s = e?.detail?.status;
-          if (s === "session-started") {
-            if (navigator.vibrate) navigator.vibrate(20);
-            bgm.currentTime = 0;
-            bgm
-              .play()
-              .then(() => setAudioState("Đang phát"))
-              .catch(() => setAudioState("Bị chặn"));
-          } else if (s === "not-presenting" || s === "failed") {
-            try {
-              bgm.pause();
-              bgm.currentTime = 0;
-              setAudioState("Tắt");
-            } catch (_) {}
-          }
-        });
-
-        // Pause khi tab ẩn
-        document.addEventListener("visibilitychange", () => {
-          if (document.hidden) {
-            try {
-              bgm.pause();
-              setAudioState("Tạm dừng");
-            } catch (_) {}
-          }
-        });
-
-        // --- Web view gestures: rotate & pinch -> update camera-orbit (simulates move+zoom) ---
-        // This only runs in non-AR web view; in AR the platform gestures handle placement/scale.
-        let pointers = new Map();
-        let lastDist = null;
-        let isInAR = false;
-
-        mv.addEventListener("ar-status", (e) => {
-          const s = e?.detail?.status;
-          isInAR = s === "session-started";
-        });
-
-        // parse camera-orbit like "0deg 75deg 2.2m"
-        function parseOrbit(str) {
-          const parts = (str || "0deg 75deg 2.2m").split(/\s+/);
-          const az = parseFloat(parts[0].replace("deg", "")) || 0;
-          const el = parseFloat(parts[1].replace("deg", "")) || 75;
-          const r = parseFloat(parts[2].replace("m", "")) || 2.2;
-          return { az, el, r };
-        }
-        function formatOrbit(o) {
-          return `${o.az}deg ${o.el}deg ${o.r}m`;
-        }
-
-        // clamp helpers
-        function clamp(v, min, max) {
-          return Math.max(min, Math.min(max, v));
-        }
-
-        // initialize orbit from attribute
-        let orbit = parseOrbit(
-          mv.getAttribute("camera-orbit") || "0deg 75deg 2.2m"
-        );
-
-        // apply initial orbit to model-viewer
-        mv.setAttribute("camera-orbit", formatOrbit(orbit));
-
-        // pointer events on model-viewer (non-AR)
-        mv.addEventListener(
-          "pointerdown",
-          (ev) => {
-            // if in AR session, don't intercept gestures
-            if (isInAR) return;
-            pointers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
-            mv.setPointerCapture?.(ev.pointerId);
-            if (pointers.size === 2) {
-              // start pinch
-              const pts = Array.from(pointers.values());
-              lastDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
-            }
-          },
-          { passive: false }
-        );
-
-        mv.addEventListener(
-          "pointermove",
-          (ev) => {
-            if (isInAR) return;
-            if (!pointers.has(ev.pointerId)) return;
-            // update pointer
-            const data = pointers.get(ev.pointerId);
-            const prevX = data.x,
-              prevY = data.y;
-            const curX = ev.clientX,
-              curY = ev.clientY;
-            pointers.set(ev.pointerId, { x: curX, y: curY });
-
-            if (pointers.size === 1) {
-              // rotate orbit by drag
-              const dx = curX - prevX;
-              const dy = curY - prevY;
-              const azDelta = dx * 0.1; // sensitivity adjust
-              const elDelta = dy * 0.08;
-              orbit.az = (orbit.az - azDelta) % 360;
-              orbit.el = clamp(orbit.el - elDelta, -85, 85);
-              mv.setAttribute("camera-orbit", formatOrbit(orbit));
-            } else if (pointers.size === 2) {
-              // pinch: compute distance
-              const pts = Array.from(pointers.values());
-              const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
-              if (lastDist) {
-                const delta = dist - lastDist;
-                // adjust radius by delta (sensitivity)
-                const factor = 0.01; // tweak for speed
-                orbit.r = clamp(orbit.r - delta * factor, 0.3, 10.0);
-                mv.setAttribute("camera-orbit", formatOrbit(orbit));
-              }
-              lastDist = dist;
-            }
-          },
-          { passive: false }
-        );
-
-        function releasePointer(id) {
-          try {
-            mv.releasePointerCapture?.(id);
-          } catch (_) {}
-          pointers.delete(id);
-          if (pointers.size < 2) lastDist = null;
-        }
-
-        mv.addEventListener(
-          "pointerup",
-          (ev) => {
-            releasePointer(ev.pointerId);
-          },
-          { passive: true }
-        );
-        mv.addEventListener(
-          "pointercancel",
-          (ev) => {
-            releasePointer(ev.pointerId);
-          },
-          { passive: true }
-        );
-        mv.addEventListener(
-          "lostpointercapture",
-          (ev) => {
-            releasePointer(ev.pointerId);
-          },
-          { passive: true }
-        );
-
-        // wheel zoom for desktop
-        mv.addEventListener(
-          "wheel",
-          (ev) => {
-            if (isInAR) return;
-            ev.preventDefault();
-            const delta = ev.deltaY;
-            orbit.r = clamp(orbit.r + delta * 0.01, 0.3, 10.0);
-            mv.setAttribute("camera-orbit", formatOrbit(orbit));
-          },
-          { passive: false }
-        );
-
-        // Attempt to unlock audio on first user tap anywhere
-        window.addEventListener(
-          "pointerdown",
-          async function oneTime() {
-            try {
-              await bgm.play();
-              bgm.pause();
-              bgm.currentTime = 0;
-              setAudioState("Sẵn sàng");
-            } catch (e) {
-              /*ignored*/
-            }
-            window.removeEventListener("pointerdown", oneTime, {
-              capture: true,
-            });
-          },
-          { capture: true, once: true }
-        );
-
-        // helper to update audio state text
-        function setAudioState(txt) {
-          audioState.textContent = txt;
-        }
-
-        // Error handling
-        mv.addEventListener("error", (e) => {
-          console.warn("[model-viewer] error:", e?.detail || e);
-          show("⚠️ Lỗi model-viewer. Mở console để xem chi tiết.", 4000);
-        });
-
-        // initial audio text
-        setAudioState("Tắt");
-      })();
+      });
     </script>
   </body>
 </html>
