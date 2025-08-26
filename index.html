@@ -7,9 +7,9 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <meta name="theme-color" content="#0b0c10" />
-    <title>Robot AR — WebXR first (zoom/move)</title>
+    <title>AR Model + Nhạc</title>
 
-    <!-- model-viewer official -->
+    <!-- model-viewer -->
     <script
       type="module"
       src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
@@ -19,9 +19,7 @@
       :root {
         color-scheme: dark;
       }
-      html,
       body {
-        height: 100%;
         margin: 0;
         background: #0b0c10;
         color: #fff;
@@ -41,7 +39,7 @@
         --poster-color: #0b0c10;
       }
 
-      /* AR button */
+      /* Nút AR */
       button[slot="ar-button"] {
         position: absolute;
         bottom: 20px;
@@ -62,7 +60,7 @@
         transform: translateX(-50%) scale(0.97);
       }
 
-      /* audio controls */
+      /* Audio controls */
       .audio-controls {
         position: absolute;
         bottom: 92px;
@@ -118,13 +116,12 @@
     <div class="wrap">
       <div id="notice" class="notice hidden">🔎 Kiểm tra AR...</div>
 
-      <!-- model-viewer: defaults allow camera-controls for web view,
-         ar-scale="auto" + ar-placement="floor" để hỗ trợ pinch/placement trong WebXR/Scene Viewer -->
+      <!-- model-viewer -->
       <model-viewer
         id="mv"
         src="https://modelviewer.dev/shared-assets/models/RobotExpressive.glb"
         ios-src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/Kawasaki_Ninja_H2.usdz"
-        alt="Model của bạn"
+        alt="Mô hình AR"
         ar
         ar-modes="webxr scene-viewer quick-look"
         ar-scale="auto"
@@ -143,6 +140,7 @@
         </button>
       </model-viewer>
 
+      <!-- Audio control -->
       <div class="audio-controls" id="audioControls">
         <button id="playBtn">▶️ Play nhạc</button>
         <button id="pauseBtn">⏸️ Pause</button>
@@ -154,12 +152,11 @@
       </div>
 
       <div class="hint">
-        Hướng dẫn: pinch để phóng to/thu nhỏ (trong WebXR/Scene Viewer), tap để
-        đặt lại vị trí.
+        👉 Pinch để phóng to/thu nhỏ, tap để di chuyển trong AR.
       </div>
     </div>
 
-    <!-- Thay bằng music.mp3 của bạn (cùng thư mục) hoặc URL HTTPS -->
+    <!-- Nhạc nền -->
     <audio id="bgm" src="music.mp3" preload="auto" loop></audio>
 
     <script>
@@ -172,7 +169,7 @@
         const pauseBtn = document.getElementById("pauseBtn");
         const audioState = document.getElementById("audioState");
 
-        const iosSrcUrl = mv.getAttribute("ios-src"); // giữ để fallback nếu cần
+        const iosSrcUrl = mv.getAttribute("ios-src");
 
         const isSecure = () =>
           location.protocol === "https:" || location.hostname === "localhost";
@@ -186,20 +183,11 @@
           show._t = setTimeout(() => notice.classList.add("hidden"), ms);
         }
 
-        if (!isSecure()) {
-          show("⚠️ Vui lòng chạy trên HTTPS hoặc localhost để dùng AR.");
-        } else {
-          show("🔎 Kiểm tra WebXR support…", 1200);
-        }
-
-        // --- Phát hiện WebXR immersive-ar support ---
+        // ✅ Detect WebXR
         async function detectAndConfigure() {
           let xrSupported = false;
           try {
-            if (
-              navigator.xr &&
-              typeof navigator.xr.isSessionSupported === "function"
-            ) {
+            if (navigator.xr?.isSessionSupported) {
               xrSupported = await navigator.xr.isSessionSupported(
                 "immersive-ar"
               );
@@ -208,155 +196,63 @@
             xrSupported = false;
           }
 
-          // Nếu WebXR hỗ trợ, ưu tiên WebXR: loại bỏ ios-src để tránh Quick Look (USDZ) override trên iOS
-          // và đặt ar-modes để ưu tiên webxr.
           if (xrSupported) {
-            show(
-              "✅ Thiết bị hỗ trợ WebXR — ưu tiên WebXR (zoom + move hoạt động).",
-              2600
-            );
-            try {
-              // Set attribute để model-viewer ưu tiên webxr
-              mv.setAttribute("ar-modes", "webxr scene-viewer");
-              // Remove ios-src so Quick Look won't be forced on iOS (if it was present)
-              if (mv.hasAttribute("ios-src")) mv.removeAttribute("ios-src");
-            } catch (e) {
-              console.warn("config webxr:", e);
-            }
+            show("✅ Thiết bị hỗ trợ WebXR — ưu tiên WebXR.", 2600);
+            mv.setAttribute("ar-modes", "webxr scene-viewer");
+            mv.removeAttribute("ios-src");
           } else {
-            // Không có webxr: fallback -> keep ios-src so Quick Look vẫn có thể mở trên iOS
-            show(
-              "ℹ️ WebXR không có trên thiết bị này. Sử dụng Quick Look / Scene Viewer (nếu có).",
-              4200
-            );
-            try {
-              mv.setAttribute("ar-modes", "scene-viewer quick-look");
-              if (iosSrcUrl) mv.setAttribute("ios-src", iosSrcUrl);
-            } catch (e) {
-              console.warn("config fallback:", e);
-            }
+            show("ℹ️ Không có WebXR. Dùng Scene Viewer/Quick Look.", 4200);
+            mv.setAttribute("ar-modes", "scene-viewer quick-look");
+            if (iosSrcUrl) mv.setAttribute("ios-src", iosSrcUrl);
           }
         }
-
-        // chạy detect trước khi user click (sớm)
         detectAndConfigure();
 
-        // --- animation default nếu file có animation ---
-        mv.addEventListener("load", () => {
-          try {
-            const anims = mv.availableAnimations || [];
-            if (anims.length) {
-              const chosen = anims.includes("Dance") ? "Dance" : anims[0];
-              mv.animationName = chosen;
-              mv.loop = true;
-              mv.timeScale = 1;
-              if (typeof mv.play === "function") mv.play();
-            }
-          } catch (e) {
-            console.warn("animation init", e);
-          }
-        });
-
-        // --- Audio controls + autoplay policy handling ---
+        // 🎵 Audio controls
         function setAudioState(text) {
           audioState.textContent = text;
         }
-
-        async function tryUnlockAudio() {
-          try {
-            await bgm.play();
-            bgm.pause();
-            bgm.currentTime = 0;
-            setAudioState("Sẵn sàng");
-            return true;
-          } catch (e) {
-            setAudioState("Bị chặn");
-            return false;
-          }
-        }
-
-        playBtn.addEventListener("click", async () => {
-          try {
-            await bgm.play();
-            setAudioState("Đang phát");
-          } catch {
-            setAudioState("Bị chặn");
-            await tryUnlockAudio();
-          }
+        playBtn.addEventListener("click", () => {
+          bgm.play().then(() => setAudioState("Đang phát"));
         });
         pauseBtn.addEventListener("click", () => {
           bgm.pause();
           setAudioState("Tạm dừng");
         });
 
-        // khi bấm AR button: cố gắng play audio trên gesture của người dùng
+        // Khi bấm AR → bật nhạc
         arBtn.addEventListener("click", async () => {
           try {
             await bgm.play();
             setAudioState("Đang phát");
-          } catch (err) {
-            console.log("[AR] audio blocked, trying unlock", err);
-            await tryUnlockAudio();
+          } catch {
+            setAudioState("Bị chặn");
             if (isIOS()) {
-              show(
-                "📲 iOS Quick Look thường không cho nhạc web chạy trong AR (giới hạn nền tảng).",
-                4200
-              );
-            } else {
-              show("🔊 Nếu nhạc không phát, nhấn Play.", 3000);
+              show("📲 iOS Quick Look thường không cho phát nhạc.", 4200);
             }
           }
-          // model-viewer tự xử lý mở AR (WebXR/SceneViewer/QuickLook) khi nút này được bấm
         });
 
-        // Khi ar-status thay đổi (bắt đầu session): đảm bảo play
+        // Khi session AR thay đổi
         mv.addEventListener("ar-status", (e) => {
-          const s = e?.detail?.status;
+          const s = e.detail?.status;
           if (s === "session-started") {
-            if (navigator.vibrate) navigator.vibrate(20);
             bgm.currentTime = 0;
-            bgm
-              .play()
-              .then(() => setAudioState("Đang phát"))
-              .catch(() => setAudioState("Bị chặn"));
+            bgm.play().then(() => setAudioState("Đang phát"));
           } else if (s === "not-presenting" || s === "failed") {
-            try {
-              bgm.pause();
-              bgm.currentTime = 0;
-              setAudioState("Tắt");
-            } catch (e) {}
+            bgm.pause();
+            bgm.currentTime = 0;
+            setAudioState("Tắt");
           }
         });
 
-        // Pause when hidden
+        // Ẩn tab → pause nhạc
         document.addEventListener("visibilitychange", () => {
           if (document.hidden) {
-            try {
-              bgm.pause();
-              setAudioState("Tạm dừng");
-            } catch (e) {}
+            bgm.pause();
+            setAudioState("Tạm dừng");
           }
         });
-
-        // Error handler
-        mv.addEventListener("error", (e) => {
-          console.warn("[model-viewer] error:", e?.detail || e);
-          show("⚠️ Lỗi model-viewer. Xem console để biết chi tiết.", 4000);
-        });
-
-        // fallback unlock on first pointerdown
-        (function oneTimeUnlock() {
-          const handler = async () => {
-            await tryUnlockAudio();
-            window.removeEventListener("pointerdown", handler, {
-              capture: true,
-            });
-          };
-          window.addEventListener("pointerdown", handler, {
-            capture: true,
-            once: true,
-          });
-        })();
 
         setAudioState("Tắt");
       })();
