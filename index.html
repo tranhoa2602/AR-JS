@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>AR + Animation + Âm thanh</title>
+    <title>AR + Animation + Audio</title>
     <script
       type="module"
       src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
@@ -20,7 +20,6 @@
         color: #fff;
         font-family: sans-serif;
       }
-
       model-viewer {
         width: 100%;
         height: 100%;
@@ -52,23 +51,7 @@
         border-radius: 10px;
         font-size: 16px;
         text-align: center;
-        display: none;
-        z-index: 10;
-      }
-
-      .ar-audio-btn {
-        position: absolute;
-        bottom: 80px;
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 10px 20px;
-        border: none;
-        border-radius: 12px;
-        background: #ff4d4f;
-        color: #fff;
-        font-size: 15px;
-        cursor: pointer;
-        display: none;
+        display: block;
         z-index: 10;
       }
     </style>
@@ -77,7 +60,7 @@
     <model-viewer
       id="mv"
       src="module/source/Chibi Ripper (the Death).glb"
-      ios-src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/Chibi_Ripper.usdz#callToAction=🔊%20Nghe%20em%20bé%20khóc&canonicalWebPageURL=https://example.com/play-baby-cry"
+      ios-src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/Chibi_Ripper.usdz#callToAction=Nghe%20nhạc&callToActionURL=https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3&canonicalWebPageURL=https://example.com/play-baby-cry"
       ar
       ar-modes="webxr scene-viewer quick-look"
       camera-controls
@@ -90,9 +73,6 @@
 
     <div id="tapNotice">📌 Chạm vào mặt phẳng để đặt mô hình</div>
 
-    <button id="arAudioBtn" class="ar-audio-btn">
-      🔊 Bật tiếng em bé khóc
-    </button>
     <audio
       id="crySound"
       src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
@@ -102,57 +82,48 @@
     <script>
       const mv = document.getElementById("mv");
       const tapNotice = document.getElementById("tapNotice");
-      const arAudioBtn = document.getElementById("arAudioBtn");
       const crySound = document.getElementById("crySound");
 
       const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-      // Khi model load xong, play animation tự động
+      // Khi model load xong, play animation
       mv.addEventListener("load", () => {
         const anims = mv.availableAnimations || [];
         if (anims.length) {
-          const chosen = anims[0];
-          mv.animationName = chosen;
+          mv.animationName = anims[0];
           mv.loop = true;
           mv.timeScale = 1;
           if (mv.play) mv.play();
-          console.log("Animation đang chạy:", chosen);
+          console.log("Animation đang chạy:", anims[0]);
         }
       });
 
       // Khi AR session bắt đầu
       mv.addEventListener("ar-status", (e) => {
         if (e.detail.status === "session-started") {
+          tapNotice.style.display = "none"; // ẩn overlay
           if (!isIOS()) {
-            // Android WebXR
-            tapNotice.style.display = "block";
-            arAudioBtn.style.display = "block";
-            if (mv.play) mv.play(); // đảm bảo animation chạy
+            // Android WebXR: play audio tự động khi đặt mô hình
+            crySound.currentTime = 0;
+            crySound
+              .play()
+              .catch(() => console.log("Audio bị chặn, cần user tap"));
           } else {
-            alert("⚠️ iOS Quick Look không hỗ trợ nút âm thanh ngoài model.");
+            // iOS Quick Look: cảnh báo
+            alert(
+              "⚠️ Trên iPhone, nhấn mô hình để mở Quick Look và phát âm thanh."
+            );
           }
-        } else if (e.detail.status === "not-presenting") {
-          tapNotice.style.display = "none";
-          arAudioBtn.style.display = "none";
-          crySound.pause();
-          crySound.currentTime = 0;
+          if (mv.play) mv.play(); // đảm bảo animation chạy
         }
       });
 
-      // Khi model được đặt trên mặt phẳng (Android WebXR)
-      mv.addEventListener("model-placed", () => {
-        tapNotice.style.display = "none";
-      });
-
-      // Nút phát/tắt âm thanh
-      arAudioBtn.addEventListener("click", () => {
-        if (crySound.paused) {
-          crySound.play();
-          arAudioBtn.textContent = "⏸️ Tắt tiếng em bé";
-        } else {
+      // Khi AR session kết thúc
+      mv.addEventListener("ar-status", (e) => {
+        if (e.detail.status === "not-presenting") {
           crySound.pause();
           crySound.currentTime = 0;
-          arAudioBtn.textContent = "🔊 Bật tiếng em bé khóc";
+          tapNotice.style.display = "block"; // hiển thị overlay trở lại
         }
       });
 
@@ -160,7 +131,7 @@
       document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
           crySound.pause();
-          arAudioBtn.textContent = "🔊 Bật tiếng em bé khóc";
+          crySound.currentTime = 0;
         }
       });
     </script>
