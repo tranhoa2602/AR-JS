@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>AR + Animation + Audio</title>
+    <title>AR</title>
     <script
       type="module"
       src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
@@ -85,8 +85,6 @@
       const crySound = document.getElementById("crySound");
 
       const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-      // Khi model load xong, play animation
       mv.addEventListener("load", () => {
         const anims = mv.availableAnimations || [];
         if (anims.length) {
@@ -97,28 +95,23 @@
           console.log("Animation đang chạy:", anims[0]);
         }
       });
-
-      // Khi AR session bắt đầu
       mv.addEventListener("ar-status", (e) => {
         if (e.detail.status === "session-started") {
-          tapNotice.style.display = "none"; // ẩn overlay
+          tapNotice.style.display = "none";
           if (!isIOS()) {
-            // Android WebXR: play audio tự động khi đặt mô hình
             crySound.currentTime = 0;
             crySound
               .play()
               .catch(() => console.log("Audio bị chặn, cần user tap"));
           } else {
-            // iOS Quick Look: cảnh báo
             alert(
               "⚠️ Trên iPhone, nhấn mô hình để mở Quick Look và phát âm thanh."
             );
           }
-          if (mv.play) mv.play(); // đảm bảo animation chạy
+          if (mv.play) mv.play();
         }
       });
 
-      // Khi AR session kết thúc
       mv.addEventListener("ar-status", (e) => {
         if (e.detail.status === "not-presenting") {
           crySound.pause();
