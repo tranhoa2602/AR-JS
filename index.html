@@ -25,65 +25,62 @@
       model-viewer {
         width: 100%;
         height: 100%;
-        --ar-button-display: none; /* Ẩn nút mặc định */
+        --ar-button-display: none;
         background: #0b0c10;
       }
 
-      /* Nhóm nút */
       .button-group {
         position: absolute;
-        bottom: 22px;
+        bottom: 30px;
         left: 50%;
         transform: translateX(-50%);
         display: flex;
-        gap: 18px;
+        gap: 16px;
         z-index: 10;
       }
 
       .button-group button {
         flex: 1;
-        min-width: 130px;
-        padding: 12px 20px;
+        width: 160px;
+        padding: 14px 20px;
         border: none;
-        border-radius: 14px;
+        border-radius: 16px;
         font-weight: 600;
+        font-size: 15px;
         cursor: pointer;
-        font-size: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
-        transition: transform 0.18s ease, filter 0.22s ease;
-        will-change: transform, filter;
-        backdrop-filter: blur(10px);
+        gap: 10px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        transition: transform 0.2s ease, filter 0.25s ease, box-shadow 0.2s ease;
+        will-change: transform, filter, box-shadow;
+        backdrop-filter: blur(12px);
+      }
+
+      .button-group button:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.1);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
       }
 
       .button-group button:active {
-        transform: scale(0.94);
+        transform: scale(0.95);
       }
 
-      /* Nút AR */
       .ar-btn {
-        background: linear-gradient(135deg, #ffdd70, #ffb700);
-        color: #222;
-      }
-      .ar-btn:hover {
-        filter: brightness(1.06);
+        background: linear-gradient(135deg, #ffd700, #ff8c00);
+        color: #1a1a1a;
       }
 
-      /* Nút Link */
       .link-btn {
-        background: linear-gradient(135deg, #5ac8fa, #007aff);
+        background: linear-gradient(135deg, #ff3b3b, #d81b60);
         color: #fff;
       }
-      .link-btn:hover {
-        filter: brightness(1.08);
-      }
 
-      /* Icon nhỏ */
       .btn-icon {
-        font-size: 18px;
+        font-size: 20px;
+        transform: translateY(1px);
       }
     </style>
   </head>
@@ -104,17 +101,16 @@
 
     <div class="button-group">
       <button class="ar-btn" id="customAR">
-        <span class="btn-icon">👓</span> Xem AR
+        <span class="btn-icon">🕶️</span> Xem AR
       </button>
       <button
         class="link-btn"
         onclick="window.open('https://www.youtube.com/watch?v=31NuzJ_aTUk', '_blank')"
       >
-        <span class="btn-icon">▶️</span> Xem thêm
+        <span class="btn-icon">▶️</span> Ghé Thăm
       </button>
     </div>
 
-    <!-- Nhạc loop -->
     <audio
       id="Sound"
       src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/timo-timo.mp3"
@@ -127,10 +123,9 @@
       const Sound = document.getElementById("Sound");
       const customAR = document.getElementById("customAR");
 
-      // Phát nhạc chỉ khi vào AR
       customAR.addEventListener("click", async () => {
         try {
-          await Sound.play(); // unlock audio gesture
+          await Sound.play();
           Sound.pause();
           Sound.currentTime = 0;
         } catch (e) {
@@ -144,7 +139,7 @@
         if (status === "session-started") {
           try {
             Sound.currentTime = 0;
-            await Sound.play(); // bật loop nhạc
+            await Sound.play();
           } catch (err) {
             console.log("Không phát được audio:", err);
           }
@@ -154,7 +149,6 @@
         }
       });
 
-      // Reset khi tab ẩn
       document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
           Sound.pause();
