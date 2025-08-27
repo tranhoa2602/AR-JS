@@ -18,71 +18,72 @@
         height: 100%;
         background: #0b0c10;
         color: #fff;
-        font-family: sans-serif;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial,
+          sans-serif;
         overflow: hidden;
       }
       model-viewer {
         width: 100%;
         height: 100%;
+        /* Ẩn nút AR mặc định để giao diện đồng đều */
+        --ar-button-display: none;
+        background: #0b0c10;
       }
 
-      /* Nhóm nút */
+      /* Nhóm 2 nút nhỏ gọn, đồng đều iOS/Android */
       .button-group {
         position: absolute;
-        bottom: 25px;
+        bottom: 22px;
         left: 50%;
         transform: translateX(-50%);
         display: flex;
-        gap: 20px;
+        gap: 15px;
         z-index: 10;
       }
-
-      /* Style nút chung */
       .button-group button {
-        padding: 8px 16px;
+        padding: 8px 16px; /* nhỏ lại như bạn yêu cầu */
         border: none;
-        border-radius: 14px;
-        font-weight: 500;
+        border-radius: 12px;
+        font-weight: 600;
         cursor: pointer;
         font-size: 13px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
-        transition: transform 0.15s ease, background 0.3s;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+        transition: transform 0.15s ease, filter 0.2s ease;
+        will-change: transform, filter;
       }
-
       .button-group button:active {
         transform: scale(0.92);
       }
 
-      /* Nút AR */
       .ar-btn {
         background: linear-gradient(135deg, #ffde59, #ffbe00);
         color: #000;
       }
       .ar-btn:hover {
-        background: linear-gradient(135deg, #ffea80, #ffd633);
+        filter: brightness(1.05);
       }
 
-      /* Nút Link */
       .link-btn {
         background: linear-gradient(135deg, #4dd0ff, #1aa3ff);
         color: #fff;
       }
       .link-btn:hover {
-        background: linear-gradient(135deg, #80e1ff, #4dafff);
+        filter: brightness(1.08);
       }
 
+      /* Gợi ý đặt mô hình */
       #tapNotice {
         position: absolute;
         top: 80%;
         left: 50%;
         transform: translate(-50%, -50%);
-        padding: 12px 20px;
-        background: rgba(0, 0, 0, 0.6);
+        padding: 10px 16px;
+        background: rgba(0, 0, 0, 0.55);
         color: #fff;
         border-radius: 10px;
-        font-size: 16px;
+        font-size: 14px;
         text-align: center;
-        display: block;
+        display: none; /* chỉ hiện khi vào AR */
         z-index: 10;
       }
     </style>
@@ -93,13 +94,13 @@
       src="module/source/chibialice.glb"
       ios-src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/ChibiAlice.usdz"
       ar
-      autoplay
-      camera-controls
       ar-modes="webxr quick-look"
-    >
-    </model-viewer>
+      camera-controls
+      autoplay
+      alt="Chibi Alice"
+    ></model-viewer>
 
-    <!-- Nút tùy chỉnh -->
+    <!-- 2 nút tùy chỉnh (đồng đều Android/iOS) -->
     <div class="button-group">
       <button class="ar-btn" id="customAR">🚀 Xem AR</button>
       <button
@@ -112,6 +113,7 @@
 
     <div id="tapNotice">📌 Chạm vào mặt phẳng để đặt mô hình</div>
 
+    <!-- Âm thanh loop -->
     <audio
       id="crySound"
       src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/timo-timo.mp3"
@@ -125,53 +127,72 @@
       const crySound = document.getElementById("crySound");
       const customAR = document.getElementById("customAR");
 
-      let isModelPlaced = false;
       const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-      // Nút AR tùy chỉnh
-      customAR.addEventListener("click", () => {
-        if (isIOS()) {
-          // Trên iOS dùng quick look
-          mv.activateAR();
-        } else {
-          // Trên Android WebXR
-          mv.activateAR();
-        }
-      });
-
-      mv.addEventListener("ar-status", (e) => {
-        const status = e.detail.status;
-        if (status === "session-started") {
-          tapNotice.style.display = "block";
-          isModelPlaced = false;
-        } else if (status === "not-presenting") {
+      // Khi bấm nút AR: "unlock" audio trong user gesture rồi mới vào AR
+      customAR.addEventListener("click", async () => {
+        try {
+          // Unlock audio: play rồi pause ngay trong cùng gesture
+          await crySound.play();
           crySound.pause();
           crySound.currentTime = 0;
-          tapNotice.style.display = "block";
-          isModelPlaced = false;
+        } catch (e) {
+          console.log("Chuẩn bị audio thất bại (sẽ thử lại khi vào AR):", e);
         }
+        // Gọi AR (WebXR Android / Quick Look iOS)
+        mv.activateAR();
       });
 
-      mv.addEventListener("click", async () => {
-        if (!isIOS() && !isModelPlaced) {
-          isModelPlaced = true;
-          tapNotice.style.display = "none";
-          crySound.currentTime = 0;
+      // Theo dõi trạng thái AR
+      mv.addEventListener("ar-status", async (e) => {
+        const status = e.detail.status;
+        if (status === "session-started") {
+          tapNotice.style.display = "block"; // hướng dẫn đặt model
           try {
-            await crySound.play();
-          } catch (e) {
-            console.log("Audio bị chặn:", e);
+            crySound.currentTime = 0;
+            await crySound.play(); // phát nhạc ngay khi AR bắt đầu (sau gesture)
+          } catch (err) {
+            console.log(
+              "Không phát được audio trong AR, cần thêm tương tác:",
+              err
+            );
           }
-          if (mv.play) mv.play();
+        } else if (status === "not-presenting") {
+          // Thoát AR: dừng nhạc & reset
+          crySound.pause();
+          crySound.currentTime = 0;
+          tapNotice.style.display = "none";
         }
       });
 
+      // Nếu bạn vẫn muốn phát khi đặt model (WebXR): nghe tap lần đầu trong AR
+      let placedOnce = false;
+      mv.addEventListener("click", async () => {
+        // Chỉ Android WebXR mới nhận click này; iOS Quick Look không
+        if (!isIOS() && !placedOnce) {
+          placedOnce = true;
+          tapNotice.style.display = "none";
+          try {
+            if (crySound.paused) {
+              await crySound.play();
+            }
+          } catch (e) {
+            console.log("Audio bị chặn khi tap trong AR:", e);
+          }
+        }
+      });
+
+      // Dừng nhạc khi tab ẩn (rời app)
       document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
           crySound.pause();
           crySound.currentTime = 0;
-          isModelPlaced = false;
         }
+      });
+
+      // Reset flag khi load lại trang
+      window.addEventListener("pageshow", () => {
+        placedOnce = false;
       });
     </script>
   </body>
