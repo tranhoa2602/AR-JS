@@ -2,101 +2,179 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AR Model</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>AR</title>
     <script
       type="module"
       src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
     ></script>
     <style>
+      html,
       body {
         margin: 0;
+        height: 100%;
         background: #0b0c10;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
+        color: #fff;
+        font-family: sans-serif;
       }
-
       model-viewer {
         width: 100%;
         height: 100%;
-        background-color: #0b0c10;
       }
 
-      .buttons {
+      /* Container 2 nút */
+      .button-group {
         position: absolute;
         bottom: 20px;
-        right: 20px;
+        left: 50%;
+        transform: translateX(-50%);
         display: flex;
-        gap: 12px;
+        gap: 15px;
+        z-index: 10;
       }
 
-      .btn {
-        padding: 10px 14px;
-        font-size: 14px;
+      .button-group button {
+        padding: 8px 20px;
         border: none;
         border-radius: 10px;
+        font-weight: 600;
         cursor: pointer;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+        font-size: 14px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        transition: transform 0.1s ease;
       }
 
-      .btn-blue {
-        background: #4db8ff;
+      .button-group button:active {
+        transform: scale(0.95);
+      }
+
+      .ar-btn {
+        background: #ffe66d;
+        color: #000;
+      }
+      .link-btn {
+        background: #4dd0ff;
+        color: #000;
+      }
+
+      #tapNotice {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 12px 20px;
+        background: rgba(0, 0, 0, 0.6);
         color: #fff;
-      }
-
-      .btn-white {
-        background: #fff;
-        color: #333;
+        border-radius: 10px;
+        font-size: 16px;
+        text-align: center;
+        display: block;
+        z-index: 10;
       }
     </style>
   </head>
   <body>
     <model-viewer
       id="mv"
-      src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
-      ios-src="https://modelviewer.dev/shared-assets/models/Astronaut.usdz"
+      src="module/source/tarisland.glb"
+      ios-src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/Tarisland.usdz#callToAction=Nghe%20nhạc&callToActionURL=https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/woman-crying.mp3&canonicalWebPageURL=https://example.com/play-baby-cry"
       ar
-      ar-modes="scene-viewer quick-look webxr"
-      auto-rotate
+      ar-modes="webxr scene-viewer quick-look"
       camera-controls
-    >
-    </model-viewer>
+      ar-scale="auto"
+      autoplay
+      alt="tarisland"
+    ></model-viewer>
 
-    <div class="buttons">
+    <!-- Container 2 nút -->
+    <div class="button-group">
+      <button class="ar-btn" slot="ar-button">🚀 AR</button>
       <button
-        class="btn btn-blue"
-        onclick="window.location.href='https://kenh14.vn'"
+        class="link-btn"
+        onclick="window.open('https://www.youtube.com/watch?v=31NuzJ_aTUk&list=RDMM31NuzJ_aTUk&start_radio=1', '_blank')"
       >
-        🌐 Trang web
-      </button>
-      <button class="btn btn-white" onclick="alert('Chức năng khác!')">
-        ⚙️ Tuỳ chọn
+        🌐
       </button>
     </div>
 
+    <div id="tapNotice">📌 Chạm vào mặt phẳng để đặt mô hình</div>
+
+    <audio
+      id="crySound"
+      src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/dragon.mp3"
+      preload="auto"
+      loop
+    ></audio>
+
     <script>
-      window.onload = () => {
-        const mv = document.getElementById("mv");
+      const mv = document.getElementById("mv");
+      const tapNotice = document.getElementById("tapNotice");
+      const crySound = document.getElementById("crySound");
 
-        if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
-          mv.addEventListener("load", () => {
-            const arButton = mv.shadowRoot.querySelector(
-              'button[slot="ar-button"]'
-            );
-            if (arButton) {
-              arButton.style.display = "none"; // Ẩn nút vàng iOS
-            }
-          });
+      let isModelPlaced = false;
+      const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+      // Khi model load xong
+      mv.addEventListener("load", () => {
+        const anims = mv.availableAnimations || [];
+        if (anims.length) {
+          mv.animationName = anims[0];
+          mv.loop = true;
+          mv.timeScale = 1;
+          console.log("Animation sẵn sàng:", anims[0]);
         }
+      });
 
-        console.log("Trang đã reset về trạng thái ban đầu!");
-      };
+      // Khi AR session bắt đầu
+      mv.addEventListener("ar-status", (e) => {
+        const status = e.detail.status;
+        if (status === "session-started") {
+          tapNotice.style.display = "block";
+          if (isIOS()) {
+            alert(
+              "⚠️ Trên iPhone, nhấn mô hình để mở Quick Look và phát âm thanh."
+            );
+          }
+          isModelPlaced = false;
+        }
+      });
+
+      // Khi user tap đặt model (Android WebXR)
+      mv.addEventListener("click", async () => {
+        if (!isIOS() && !isModelPlaced) {
+          isModelPlaced = true;
+          tapNotice.style.display = "none";
+          crySound.currentTime = 0;
+          try {
+            await crySound.play();
+          } catch (e) {
+            console.log("Audio bị chặn:", e);
+          }
+          if (mv.play) mv.play();
+        }
+      });
+
+      // Khi AR session kết thúc
+      mv.addEventListener("ar-status", (e) => {
+        if (e.detail.status === "not-presenting") {
+          crySound.pause();
+          crySound.currentTime = 0;
+          tapNotice.style.display = "block";
+          isModelPlaced = false;
+        }
+      });
+
+      // Dừng nhạc khi tab ẩn
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          crySound.pause();
+          crySound.currentTime = 0;
+          isModelPlaced = false;
+        }
+      });
     </script>
   </body>
 </html>
