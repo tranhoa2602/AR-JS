@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>AR</title>
+    <title>AR + Animation + Audio ổn định</title>
     <script
       type="module"
       src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
@@ -64,7 +64,7 @@
       ar
       ar-modes="webxr scene-viewer quick-look"
       camera-controls
-      ar-scale="auto"
+      ar-scale="fixed"
       autoplay
       alt="Chibi Ripper 3D Model"
     >
@@ -86,33 +86,43 @@
 
       const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-      // Khi model load xong, play animation
+      // Chạy animation khi model load xong
       mv.addEventListener("load", () => {
         const anims = mv.availableAnimations || [];
         if (anims.length) {
           mv.animationName = anims[0];
           mv.loop = true;
           mv.timeScale = 1;
-          if (mv.play) mv.play();
-          console.log("Animation đang chạy:", anims[0]);
+          console.log("Animation đã sẵn sàng:", anims[0]);
         }
       });
 
       // Khi AR session bắt đầu
       mv.addEventListener("ar-status", (e) => {
-        if (e.detail.status === "session-started") {
-          tapNotice.style.display = "none";
-          if (!isIOS()) {
-            crySound.currentTime = 0;
-            crySound
-              .play()
-              .catch(() => console.log("Audio bị chặn, cần user tap"));
-          } else {
+        const status = e.detail.status;
+        if (status === "session-started") {
+          tapNotice.style.display = "block"; // overlay nhắc tap
+          if (isIOS()) {
             alert(
               "⚠️ Trên iPhone, nhấn mô hình để mở Quick Look và phát âm thanh."
             );
           }
+        }
+      });
+
+      // Khi model được đặt xuống (WebXR Android)
+      mv.addEventListener("click", async () => {
+        if (!isIOS()) {
+          // Android WebXR: chỉ play audio khi user tap model
+          crySound.currentTime = 0;
+          try {
+            await crySound.play();
+          } catch (e) {
+            console.log("Audio bị chặn:", e);
+          }
+          // Đảm bảo animation chạy
           if (mv.play) mv.play();
+          tapNotice.style.display = "none";
         }
       });
 
