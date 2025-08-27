@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>AR</title>
+    <title>AR Camera Fixed Model</title>
     <script
       type="module"
       src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
@@ -17,69 +17,57 @@
         margin: 0;
         height: 100%;
         background: #0b0c10;
-        --ar-button-display: none;
         color: #fff;
-        font-family: sans-serif;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial,
+          sans-serif;
+        overflow: hidden;
       }
       model-viewer {
         width: 100%;
         height: 100%;
+        --ar-button-display: none; /* Ẩn nút mặc định */
+        background: #0b0c10;
       }
 
-      /* Container 2 nút */
+      /* Nhóm 2 nút */
       .button-group {
         position: absolute;
-        bottom: 80px;
+        bottom: 22px;
         left: 50%;
         transform: translateX(-50%);
         display: flex;
-        gap: 20px;
+        gap: 15px;
         z-index: 10;
       }
-
       .button-group button {
-        padding: 12px 14px;
+        padding: 8px 16px;
         border: none;
-        border-radius: 20px;
-        font-weight: 400;
+        border-radius: 12px;
+        font-weight: 600;
         cursor: pointer;
         font-size: 13px;
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.35);
-        transition: all 0.2s ease;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+        transition: transform 0.15s ease, filter 0.2s ease;
+        will-change: transform, filter;
       }
-
-      .button-group button:hover {
-        transform: translateY(-3px) scale(1.05);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-      }
-
       .button-group button:active {
-        transform: scale(0.95);
+        transform: scale(0.92);
       }
 
       .ar-btn {
-        background: linear-gradient(135deg, #ffcc00, #ff8800);
+        background: linear-gradient(135deg, #ffde59, #ffbe00);
         color: #000;
+      }
+      .ar-btn:hover {
+        filter: brightness(1.05);
       }
 
       .link-btn {
-        background: linear-gradient(135deg, #00e5ff, #0066ff);
+        background: linear-gradient(135deg, #4dd0ff, #1aa3ff);
         color: #fff;
       }
-
-      #tapNotice {
-        position: absolute;
-        top: 20%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        padding: 12px 20px;
-        background: rgba(0, 0, 0, 0.6);
-        color: #fff;
-        border-radius: 10px;
-        font-size: 16px;
-        text-align: center;
-        display: block;
-        z-index: 10;
+      .link-btn:hover {
+        filter: brightness(1.08);
       }
     </style>
   </head>
@@ -90,14 +78,24 @@
       ios-src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/ChibiAlice.usdz"
       ar
       ar-modes="webxr quick-look"
+      ar-scale="fixed"
+      <!--
+      Giữ
+      nguyên
+      kích
+      thước,
+      model
+      dính
+      camera
+      --
+    >
       disable-pan
+      <!-- Không kéo -->
       disable-tap-placement
-      camera-controls
-      autoplay
-      alt="Chibi Alice"
-    ></model-viewer>
+      <!-- Không cần tap để đặt -->
+      camera-controls autoplay alt="Chibi Alice" ></model-viewer
+    >
 
-    <!-- 2 nút tùy chỉnh -->
     <div class="button-group">
       <button class="ar-btn" id="customAR">🚀 Xem AR</button>
       <button
@@ -108,9 +106,7 @@
       </button>
     </div>
 
-    <div id="tapNotice">📌 Chạm vào mặt phẳng để đặt mô hình</div>
-
-    <!-- Âm thanh (loop) -->
+    <!-- Nhạc loop -->
     <audio
       id="crySound"
       src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/timo-timo.mp3"
@@ -120,42 +116,37 @@
 
     <script>
       const mv = document.getElementById("mv");
-      const tapNotice = document.getElementById("tapNotice");
       const crySound = document.getElementById("crySound");
       const customAR = document.getElementById("customAR");
 
-      // Mở AR sau khi user click
+      // Phát nhạc chỉ khi vào AR
       customAR.addEventListener("click", async () => {
         try {
-          // Unlock audio (bắt buộc trên iOS)
-          await crySound.play();
+          await crySound.play(); // unlock audio gesture
           crySound.pause();
           crySound.currentTime = 0;
         } catch (e) {
-          console.log("Chuẩn bị audio thất bại:", e);
+          console.log("Unlock audio fail:", e);
         }
         mv.activateAR();
       });
 
-      // Trạng thái AR
       mv.addEventListener("ar-status", async (e) => {
         const status = e.detail.status;
         if (status === "session-started") {
-          tapNotice.style.display = "block";
           try {
             crySound.currentTime = 0;
-            await crySound.play(); // chỉ phát khi vào AR
+            await crySound.play(); // bật loop nhạc
           } catch (err) {
-            console.log("Không phát được audio trong AR:", err);
+            console.log("Không phát được audio:", err);
           }
         } else if (status === "not-presenting") {
           crySound.pause();
           crySound.currentTime = 0;
-          tapNotice.style.display = "none";
         }
       });
 
-      // Dừng nhạc khi rời app
+      // Reset khi tab ẩn
       document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
           crySound.pause();
