@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>AR + Animation + Audio + Nút chuyển trang</title>
+    <title>AR + Animation + Audio + 2 nút đẹp</title>
     <script
       type="module"
       src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
@@ -25,12 +25,39 @@
         height: 100%;
       }
 
-      /* Nút AR & Nút chuyển trang */
+      /* Container 2 nút */
+      .button-group {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 20px;
+        z-index: 10;
+      }
+
+      .button-group button {
+        padding: 12px 32px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        transition: transform 0.1s ease;
+      }
+
+      .button-group button:active {
+        transform: scale(0.95);
+      }
+
+      .ar-btn {
+        background: #ffe66d;
+        color: #000;
+      }
       .link-btn {
-        left: 60%;
         background: #4dd0ff;
         color: #000;
-        transform: translateX(-50%);
       }
 
       #tapNotice {
@@ -62,13 +89,16 @@
       alt="Chibi Ripper 3D Model"
     ></model-viewer>
 
-    <button class="ar-btn" slot="ar-button">🚀 Xem trong AR</button>
-    <button
-      class="link-btn"
-      onclick="window.open('https://kenh14.vn', '_blank')"
-    >
-      🌐 Mở Kenh14.vn
-    </button>
+    <!-- Container 2 nút -->
+    <div class="button-group">
+      <button class="ar-btn" slot="ar-button">🚀 Xem trong AR</button>
+      <button
+        class="link-btn"
+        onclick="window.open('https://kenh14.vn', '_blank')"
+      >
+        🌐 Mở Kenh14.vn
+      </button>
+    </div>
 
     <div id="tapNotice">📌 Chạm vào mặt phẳng để đặt mô hình</div>
 
