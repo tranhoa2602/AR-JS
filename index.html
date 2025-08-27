@@ -2,33 +2,27 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
     <title>AR</title>
-    <script
-      type="module"
-      src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
-    ></script>
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
     <style>
-      html,
-      body {
+      html, body {
         margin: 0;
         height: 100%;
         background: #0b0c10;
         color: #fff;
         font-family: sans-serif;
+        overflow: hidden;
       }
       model-viewer {
         width: 100%;
         height: 100%;
       }
 
-      /* Container 2 nút */
+      /* Nhóm nút */
       .button-group {
         position: absolute;
-        bottom: 20px;
+        bottom: 25px;
         left: 50%;
         transform: translateX(-50%);
         display: flex;
@@ -36,39 +30,43 @@
         z-index: 10;
       }
 
+      /* Style nút chung */
       .button-group button {
-        padding: 12px 28px;
+        padding: 12px 24px;
         border: none;
-        border-radius: 50px;
-        font-weight: 600;
+        border-radius: 14px;
+        font-weight: 700;
         cursor: pointer;
         font-size: 15px;
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.35);
-        transition: all 0.2s ease;
-      }
-
-      .button-group button:hover {
-        transform: translateY(-3px) scale(1.05);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.35);
+        transition: transform 0.15s ease, background 0.3s;
       }
 
       .button-group button:active {
-        transform: scale(0.95);
+        transform: scale(0.9);
       }
 
+      /* Nút AR */
       .ar-btn {
-        background: linear-gradient(135deg, #ffcc00, #ff8800);
+        background: linear-gradient(135deg, #ffde59, #ffbe00);
         color: #000;
       }
+      .ar-btn:hover {
+        background: linear-gradient(135deg, #ffea80, #ffd633);
+      }
 
+      /* Nút Link */
       .link-btn {
-        background: linear-gradient(135deg, #00e5ff, #0066ff);
+        background: linear-gradient(135deg, #4dd0ff, #1aa3ff);
         color: #fff;
+      }
+      .link-btn:hover {
+        background: linear-gradient(135deg, #80e1ff, #4dafff);
       }
 
       #tapNotice {
         position: absolute;
-        top: 85%;
+        top: 20%;
         left: 50%;
         transform: translate(-50%, -50%);
         padding: 12px 20px;
@@ -90,65 +88,54 @@
       ar
       ar-modes="webxr scene-viewer quick-look"
       camera-controls
-      ar-scale="auto"
       autoplay
       alt="tarisland"
+      style="--ar-button-display: none;"  <!-- Ẩn nút AR mặc định -->
     ></model-viewer>
 
-    <!-- Container 2 nút -->
+    <!-- Nút tùy chỉnh -->
     <div class="button-group">
-      <button class="ar-btn" slot="ar-button">🚀 AR</button>
-      <button
-        class="link-btn"
-        onclick="window.open('https://www.youtube.com/watch?v=31NuzJ_aTUk&list=RDMM31NuzJ_aTUk&start_radio=1', '_blank')"
-      >
-        🌐
-      </button>
+      <button class="ar-btn" id="customAR">🚀 Xem AR</button>
+      <button class="link-btn" onclick="window.open('https://www.youtube.com/watch?v=31NuzJ_aTUk', '_blank')">🌐 Xem thêm</button>
     </div>
 
     <div id="tapNotice">📌 Chạm vào mặt phẳng để đặt mô hình</div>
 
-    <audio
-      id="crySound"
-      src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/dragon.mp3"
-      preload="auto"
-      loop
-    ></audio>
+    <audio id="crySound" src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/dragon.mp3" preload="auto" loop></audio>
 
     <script>
       const mv = document.getElementById("mv");
       const tapNotice = document.getElementById("tapNotice");
       const crySound = document.getElementById("crySound");
+      const customAR = document.getElementById("customAR");
 
       let isModelPlaced = false;
       const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-      // Khi model load xong
-      mv.addEventListener("load", () => {
-        const anims = mv.availableAnimations || [];
-        if (anims.length) {
-          mv.animationName = anims[0];
-          mv.loop = true;
-          mv.timeScale = 1;
-          console.log("Animation sẵn sàng:", anims[0]);
+      // Nút AR tùy chỉnh
+      customAR.addEventListener("click", () => {
+        if (isIOS()) {
+          // Trên iOS dùng quick look
+          mv.activateAR();
+        } else {
+          // Trên Android WebXR
+          mv.activateAR();
         }
       });
 
-      // Khi AR session bắt đầu
       mv.addEventListener("ar-status", (e) => {
         const status = e.detail.status;
         if (status === "session-started") {
           tapNotice.style.display = "block";
-          if (isIOS()) {
-            alert(
-              "⚠️ Trên iPhone, nhấn mô hình để mở Quick Look và phát âm thanh."
-            );
-          }
+          isModelPlaced = false;
+        } else if (status === "not-presenting") {
+          crySound.pause();
+          crySound.currentTime = 0;
+          tapNotice.style.display = "block";
           isModelPlaced = false;
         }
       });
 
-      // Khi user tap đặt model (Android WebXR)
       mv.addEventListener("click", async () => {
         if (!isIOS() && !isModelPlaced) {
           isModelPlaced = true;
@@ -163,17 +150,6 @@
         }
       });
 
-      // Khi AR session kết thúc
-      mv.addEventListener("ar-status", (e) => {
-        if (e.detail.status === "not-presenting") {
-          crySound.pause();
-          crySound.currentTime = 0;
-          tapNotice.style.display = "block";
-          isModelPlaced = false;
-        }
-      });
-
-      // Dừng nhạc khi tab ẩn
       document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
           crySound.pause();
