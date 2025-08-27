@@ -2,11 +2,18 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
     <title>AR</title>
-    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <script
+      type="module"
+      src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
+    ></script>
     <style>
-      html, body {
+      html,
+      body {
         margin: 0;
         height: 100%;
         background: #0b0c10;
@@ -35,10 +42,10 @@
         padding: 12px 24px;
         border: none;
         border-radius: 14px;
-        font-weight: 700;
+        font-weight: 500;
         cursor: pointer;
         font-size: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.35);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
         transition: transform 0.15s ease, background 0.3s;
       }
 
@@ -66,7 +73,7 @@
 
       #tapNotice {
         position: absolute;
-        top: 20%;
+        top: 80%;
         left: 50%;
         transform: translate(-50%, -50%);
         padding: 12px 20px;
@@ -90,18 +97,37 @@
       camera-controls
       autoplay
       alt="tarisland"
-      style="--ar-button-display: none;"  <!-- Ẩn nút AR mặc định -->
-    ></model-viewer>
+      style="--ar-button-display: none"
+      <!--
+      Ẩn
+      nút
+      AR
+      mặc
+      định
+      --
+    >
+      ></model-viewer
+    >
 
     <!-- Nút tùy chỉnh -->
     <div class="button-group">
       <button class="ar-btn" id="customAR">🚀 Xem AR</button>
-      <button class="link-btn" onclick="window.open('https://www.youtube.com/watch?v=31NuzJ_aTUk', '_blank')">🌐 Xem thêm</button>
+      <button
+        class="link-btn"
+        onclick="window.open('https://www.youtube.com/watch?v=31NuzJ_aTUk', '_blank')"
+      >
+        🌐 Xem thêm
+      </button>
     </div>
 
     <div id="tapNotice">📌 Chạm vào mặt phẳng để đặt mô hình</div>
 
-    <audio id="crySound" src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/dragon.mp3" preload="auto" loop></audio>
+    <audio
+      id="crySound"
+      src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/dragon.mp3"
+      preload="auto"
+      loop
+    ></audio>
 
     <script>
       const mv = document.getElementById("mv");
