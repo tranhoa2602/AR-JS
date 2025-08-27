@@ -90,24 +90,14 @@
   <body>
     <model-viewer
       id="mv"
-      src="module/source/tarisland.glb"
-      ios-src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/Tarisland.usdz#callToAction=Nghe%20nhạc&callToActionURL=https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/woman-crying.mp3&canonicalWebPageURL=https://example.com/play-baby-cry"
+      src="module/source/chibialice.glb"
+      ios-src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/ChibiAlice.usdz"
       ar
-      ar-modes="webxr scene-viewer quick-look"
-      camera-controls
-      autoplay
-      alt="tarisland"
-      style="--ar-button-display: none"
-      <!--
-      Ẩn
-      nút
-      AR
-      mặc
-      định
-      --
+      ar-modes="webxr quick-look"
     >
-      ></model-viewer
-    >
+      disable-tap-placement disable-pan camera-controls auto-rotate="false"
+      autoplay alt="tarisland" style="--ar-button-display: none" >
+    </model-viewer>
 
     <!-- Nút tùy chỉnh -->
     <div class="button-group">
@@ -124,7 +114,7 @@
 
     <audio
       id="crySound"
-      src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/dragon.mp3"
+      src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/timo-timo.mp3"
       preload="auto"
       loop
     ></audio>
