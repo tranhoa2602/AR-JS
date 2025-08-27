@@ -29,45 +29,61 @@
         background: #0b0c10;
       }
 
-      /* Nhóm 2 nút */
+      /* Nhóm nút */
       .button-group {
         position: absolute;
         bottom: 22px;
         left: 50%;
         transform: translateX(-50%);
         display: flex;
-        gap: 15px;
+        gap: 18px;
         z-index: 10;
       }
+
       .button-group button {
-        padding: 8px 16px;
+        flex: 1;
+        min-width: 130px;
+        padding: 12px 20px;
         border: none;
-        border-radius: 12px;
+        border-radius: 14px;
         font-weight: 600;
         cursor: pointer;
-        font-size: 13px;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-        transition: transform 0.15s ease, filter 0.2s ease;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+        transition: transform 0.18s ease, filter 0.22s ease;
         will-change: transform, filter;
-      }
-      .button-group button:active {
-        transform: scale(0.92);
+        backdrop-filter: blur(10px);
       }
 
+      .button-group button:active {
+        transform: scale(0.94);
+      }
+
+      /* Nút AR */
       .ar-btn {
-        background: linear-gradient(135deg, #ffde59, #ffbe00);
-        color: #000;
+        background: linear-gradient(135deg, #ffdd70, #ffb700);
+        color: #222;
       }
       .ar-btn:hover {
-        filter: brightness(1.05);
+        filter: brightness(1.06);
       }
 
+      /* Nút Link */
       .link-btn {
-        background: linear-gradient(135deg, #4dd0ff, #1aa3ff);
+        background: linear-gradient(135deg, #5ac8fa, #007aff);
         color: #fff;
       }
       .link-btn:hover {
         filter: brightness(1.08);
+      }
+
+      /* Icon nhỏ */
+      .btn-icon {
+        font-size: 18px;
       }
     </style>
   </head>
@@ -87,12 +103,14 @@
     </model-viewer>
 
     <div class="button-group">
-      <button class="ar-btn" id="customAR">🚀 Xem AR</button>
+      <button class="ar-btn" id="customAR">
+        <span class="btn-icon">👓</span> Xem AR
+      </button>
       <button
         class="link-btn"
         onclick="window.open('https://www.youtube.com/watch?v=31NuzJ_aTUk', '_blank')"
       >
-        🌐 Xem thêm
+        <span class="btn-icon">▶️</span> Xem thêm
       </button>
     </div>
 
