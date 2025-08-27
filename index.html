@@ -75,7 +75,7 @@
 
     <audio
       id="crySound"
-      src="https://github.com/tranhoa2602/AR-JS/blob/main/woman-crying.mp3"
+      src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/woman-crying.mp3"
       preload="auto"
     ></audio>
 
@@ -85,6 +85,8 @@
       const crySound = document.getElementById("crySound");
 
       const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+      // Khi model load xong, play animation
       mv.addEventListener("load", () => {
         const anims = mv.availableAnimations || [];
         if (anims.length) {
@@ -95,6 +97,8 @@
           console.log("Animation đang chạy:", anims[0]);
         }
       });
+
+      // Khi AR session bắt đầu
       mv.addEventListener("ar-status", (e) => {
         if (e.detail.status === "session-started") {
           tapNotice.style.display = "none";
@@ -111,6 +115,8 @@
           if (mv.play) mv.play();
         }
       });
+
+      // Khi AR session kết thúc
       mv.addEventListener("ar-status", (e) => {
         if (e.detail.status === "not-presenting") {
           crySound.pause();
@@ -118,6 +124,8 @@
           tapNotice.style.display = "block";
         }
       });
+
+      // Dừng nhạc khi tab ẩn
       document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
           crySound.pause();
