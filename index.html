@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>AR Demo</title>
+    <title>AR</title>
     <script
       type="module"
       src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
@@ -24,30 +24,42 @@
         width: 100%;
         height: 100%;
       }
-      /* Style chung cho nút */
-      .ar-btn,
-      .goto-btn {
+
+      /* Container 2 nút */
+      .button-group {
         position: absolute;
         bottom: 20px;
-        padding: 10px 22px;
-        border: none;
-        border-radius: 10px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 15px;
         z-index: 10;
       }
+
+      .button-group button {
+        padding: 8px 20px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 14px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        transition: transform 0.1s ease;
+      }
+
+      .button-group button:active {
+        transform: scale(0.95);
+      }
+
       .ar-btn {
-        left: 40%;
         background: #ffe66d;
         color: #000;
       }
-      .goto-btn {
-        right: 40%;
-        background: #4ecdc4;
+      .link-btn {
+        background: #4dd0ff;
         color: #000;
-        text-decoration: none;
       }
+
       #tapNotice {
         position: absolute;
         top: 50%;
@@ -74,64 +86,93 @@
       camera-controls
       ar-scale="auto"
       autoplay
-      alt="3D Model"
-    >
-      <button id="arBtn" slot="ar-button" class="ar-btn">🚀 Xem AR</button>
-    </model-viewer>
+      alt="tarisland"
+    ></model-viewer>
 
-    <a href="https://kenh14.vn" target="_blank" class="goto-btn"
-      >🌐 Kenh14.vn</a
-    >
+    <!-- Container 2 nút -->
+    <div class="button-group">
+      <button class="ar-btn" slot="ar-button">🚀 AR</button>
+      <button
+        class="link-btn"
+        onclick="window.open('https://www.youtube.com/watch?v=31NuzJ_aTUk&list=RDMM31NuzJ_aTUk&start_radio=1', '_blank')"
+      >
+        🌐
+      </button>
+    </div>
+
     <div id="tapNotice">📌 Chạm vào mặt phẳng để đặt mô hình</div>
 
     <audio
       id="crySound"
-      src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/music.mp3"
+      src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/dragon.mp3"
       preload="auto"
       loop
     ></audio>
 
     <script>
       const mv = document.getElementById("mv");
-      const arBtn = document.getElementById("arBtn");
       const tapNotice = document.getElementById("tapNotice");
       const crySound = document.getElementById("crySound");
 
-      // Detect iOS
+      let isModelPlaced = false;
       const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-      // Ẩn nút AR nếu là iOS
-      if (isIOS()) {
-        arBtn.style.display = "none";
-      }
-
-      // Khi AR session bắt đầu
-      mv.addEventListener("ar-status", (e) => {
-        if (e.detail.status === "session-started") {
-          tapNotice.style.display = "none";
-          if (!isIOS()) {
-            crySound.currentTime = 0;
-            crySound
-              .play()
-              .catch(() => console.log("⚠️ Audio bị chặn, cần user tap"));
-          }
+      // Khi model load xong
+      mv.addEventListener("load", () => {
+        const anims = mv.availableAnimations || [];
+        if (anims.length) {
+          mv.animationName = anims[0];
+          mv.loop = true;
+          mv.timeScale = 1;
+          console.log("Animation sẵn sàng:", anims[0]);
         }
       });
 
-      // Khi thoát AR
+      // Khi AR session bắt đầu
+      mv.addEventListener("ar-status", (e) => {
+        const status = e.detail.status;
+        if (status === "session-started") {
+          tapNotice.style.display = "block";
+          if (isIOS()) {
+            alert(
+              "⚠️ Trên iPhone, nhấn mô hình để mở Quick Look và phát âm thanh."
+            );
+          }
+          isModelPlaced = false;
+        }
+      });
+
+      // Khi user tap đặt model (Android WebXR)
+      mv.addEventListener("click", async () => {
+        if (!isIOS() && !isModelPlaced) {
+          isModelPlaced = true;
+          tapNotice.style.display = "none";
+          crySound.currentTime = 0;
+          try {
+            await crySound.play();
+          } catch (e) {
+            console.log("Audio bị chặn:", e);
+          }
+          if (mv.play) mv.play();
+        }
+      });
+
+      // Khi AR session kết thúc
       mv.addEventListener("ar-status", (e) => {
         if (e.detail.status === "not-presenting") {
           crySound.pause();
           crySound.currentTime = 0;
           tapNotice.style.display = "block";
+          isModelPlaced = false;
         }
       });
 
-      // Nếu tab ẩn thì dừng nhạc
+      // Dừng nhạc khi tab ẩn
       document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
           crySound.pause();
           crySound.currentTime = 0;
+          isModelPlaced = false;
         }
       });
     </script>
