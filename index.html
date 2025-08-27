@@ -78,7 +78,6 @@
       ios-src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/ChibiAlice.usdz"
       ar
       autoplay
-      disable-pan
       camera-controls
       ar-modes="webxr quick-look"
       ar-scale="fixed"
@@ -98,7 +97,7 @@
 
     <!-- Nhạc loop -->
     <audio
-      id="crySound"
+      id="Sound"
       src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/timo-timo.mp3"
       preload="auto"
       loop
@@ -106,15 +105,15 @@
 
     <script>
       const mv = document.getElementById("mv");
-      const crySound = document.getElementById("crySound");
+      const Sound = document.getElementById("Sound");
       const customAR = document.getElementById("customAR");
 
       // Phát nhạc chỉ khi vào AR
       customAR.addEventListener("click", async () => {
         try {
-          await crySound.play(); // unlock audio gesture
-          crySound.pause();
-          crySound.currentTime = 0;
+          await Sound.play(); // unlock audio gesture
+          Sound.pause();
+          Sound.currentTime = 0;
         } catch (e) {
           console.log("Unlock audio fail:", e);
         }
@@ -125,22 +124,22 @@
         const status = e.detail.status;
         if (status === "session-started") {
           try {
-            crySound.currentTime = 0;
-            await crySound.play(); // bật loop nhạc
+            Sound.currentTime = 0;
+            await Sound.play(); // bật loop nhạc
           } catch (err) {
             console.log("Không phát được audio:", err);
           }
         } else if (status === "not-presenting") {
-          crySound.pause();
-          crySound.currentTime = 0;
+          Sound.pause();
+          Sound.currentTime = 0;
         }
       });
 
       // Reset khi tab ẩn
       document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
-          crySound.pause();
-          crySound.currentTime = 0;
+          Sound.pause();
+          Sound.currentTime = 0;
         }
       });
     </script>
