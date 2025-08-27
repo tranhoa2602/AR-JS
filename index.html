@@ -84,16 +84,17 @@
       const tapNotice = document.getElementById("tapNotice");
       const crySound = document.getElementById("crySound");
 
+      let isModelPlaced = false;
       const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-      // Chạy animation khi model load xong
+      // Khi model load xong
       mv.addEventListener("load", () => {
         const anims = mv.availableAnimations || [];
         if (anims.length) {
           mv.animationName = anims[0];
           mv.loop = true;
           mv.timeScale = 1;
-          console.log("Animation đã sẵn sàng:", anims[0]);
+          console.log("Animation sẵn sàng:", anims[0]);
         }
       });
 
@@ -101,28 +102,28 @@
       mv.addEventListener("ar-status", (e) => {
         const status = e.detail.status;
         if (status === "session-started") {
-          tapNotice.style.display = "block"; // overlay nhắc tap
+          tapNotice.style.display = "block";
           if (isIOS()) {
             alert(
               "⚠️ Trên iPhone, nhấn mô hình để mở Quick Look và phát âm thanh."
             );
           }
+          isModelPlaced = false;
         }
       });
 
       // Khi user tap đặt model (Android WebXR)
       mv.addEventListener("click", async () => {
-        if (!isIOS()) {
-          tapNotice.style.display = "none"; // ẩn overlay
-          // Chỉ play audio khi model được đặt
+        if (!isIOS() && !isModelPlaced) {
+          isModelPlaced = true; // Model đã đặt
+          tapNotice.style.display = "none";
           crySound.currentTime = 0;
           try {
             await crySound.play();
           } catch (e) {
             console.log("Audio bị chặn:", e);
           }
-          // Animation đảm bảo chạy
-          if (mv.play) mv.play();
+          if (mv.play) mv.play(); // Bắt animation
         }
       });
 
@@ -132,6 +133,7 @@
           crySound.pause();
           crySound.currentTime = 0;
           tapNotice.style.display = "block";
+          isModelPlaced = false;
         }
       });
 
@@ -140,6 +142,7 @@
         if (document.hidden) {
           crySound.pause();
           crySound.currentTime = 0;
+          isModelPlaced = false;
         }
       });
     </script>
