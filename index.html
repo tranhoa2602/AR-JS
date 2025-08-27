@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>AR</title>
+    <title>AR + Animation + Audio + Nút chuyển trang</title>
     <script
       type="module"
       src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
@@ -74,18 +74,24 @@
       ar
       ar-modes="webxr scene-viewer quick-look"
       camera-controls
-      ar-scale="auto"
+      ar-scale="fixed"
       autoplay
       alt="Chibi Ripper 3D Model"
+    ></model-viewer>
+
+    <button class="ar-btn" slot="ar-button">🚀 Xem trong AR</button>
+    <button
+      class="link-btn"
+      onclick="window.open('https://kenh14.vn', '_blank')"
     >
-      <button slot="ar-button">🚀 Xem trong AR</button>
-    </model-viewer>
+      🌐 Mở Kenh14.vn
+    </button>
 
     <div id="tapNotice">📌 Chạm vào mặt phẳng để đặt mô hình</div>
 
     <audio
       id="crySound"
-      src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/music.mp3"
+      src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/woman-crying.mp3"
       preload="auto"
       loop
     ></audio>
@@ -126,7 +132,7 @@
       // Khi user tap đặt model (Android WebXR)
       mv.addEventListener("click", async () => {
         if (!isIOS() && !isModelPlaced) {
-          isModelPlaced = true; // Model đã đặt
+          isModelPlaced = true;
           tapNotice.style.display = "none";
           crySound.currentTime = 0;
           try {
@@ -134,7 +140,7 @@
           } catch (e) {
             console.log("Audio bị chặn:", e);
           }
-          if (mv.play) mv.play(); // Bắt animation
+          if (mv.play) mv.play();
         }
       });
 
