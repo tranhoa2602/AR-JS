@@ -110,19 +110,19 @@
         }
       });
 
-      // Khi model được đặt xuống (WebXR Android)
+      // Khi user tap đặt model (Android WebXR)
       mv.addEventListener("click", async () => {
         if (!isIOS()) {
-          // Android WebXR: chỉ play audio khi user tap model
+          tapNotice.style.display = "none"; // ẩn overlay
+          // Chỉ play audio khi model được đặt
           crySound.currentTime = 0;
           try {
             await crySound.play();
           } catch (e) {
             console.log("Audio bị chặn:", e);
           }
-          // Đảm bảo animation chạy
+          // Animation đảm bảo chạy
           if (mv.play) mv.play();
-          tapNotice.style.display = "none";
         }
       });
 
