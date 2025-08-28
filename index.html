@@ -125,6 +125,30 @@
 
       // Khởi tạo Web Audio Context cho iOS
       let audioContext = null;
+      let audioSource = null; // Lưu trữ source để dừng âm thanh nếu cần
+
+      // Hàm phát audio bằng Web Audio API
+      async function playAudioInAR() {
+        if (!audioContext) {
+          audioContext = new (window.AudioContext ||
+            window.webkitAudioContext)();
+        }
+        try {
+          const response = await fetch(
+            "https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/timo-timo.mp3"
+          );
+          const arrayBuffer = await response.arrayBuffer();
+          const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+          const source = audioContext.createBufferSource();
+          source.buffer = audioBuffer;
+          source.loop = true;
+          source.connect(audioContext.destination);
+          source.start();
+          audioSource = source; // Lưu source để dừng sau này
+        } catch (e) {
+          console.log("Web Audio API lỗi:", e);
+        }
+      }
 
       // Unlock audio khi click nút AR
       customAR.addEventListener("click", async (event) => {
@@ -172,12 +196,16 @@
               await audioContext.resume();
             }
 
+            // Thử phát audio bằng Web Audio API trước
+            await playAudioInAR();
+
+            // Fallback: Thử phát bằng <audio> nếu cần
             Sound.currentTime = 0;
             Sound.volume = 0.7; // Giảm volume để tránh chói tai
             const playPromise = Sound.play();
             if (playPromise !== undefined) {
               await playPromise;
-              console.log("Audio đang phát trong AR");
+              console.log("Audio đang phát trong AR (HTML audio)");
             }
           } catch (err) {
             console.log("Lỗi phát audio trong AR:", err);
@@ -193,6 +221,10 @@
         } else if (status === "not-presenting") {
           Sound.pause();
           Sound.currentTime = 0;
+          if (audioSource) {
+            audioSource.stop(); // Dừng Web Audio API
+            audioSource = null;
+          }
           if (audioContext) {
             audioContext.suspend(); // Tiết kiệm tài nguyên
           }
@@ -205,6 +237,10 @@
         if (document.hidden) {
           Sound.pause();
           Sound.currentTime = 0;
+          if (audioSource) {
+            audioSource.stop();
+            audioSource = null;
+          }
           if (audioContext) {
             audioContext.suspend();
           }
@@ -217,7 +253,8 @@
             if (audioContext && audioContext.state === "suspended") {
               await audioContext.resume();
             }
-            await Sound.play();
+            await playAudioInAR(); // Resume Web Audio API
+            await Sound.play(); // Resume HTML audio
           } catch (e) {
             console.log("Resume audio thất bại:", e);
           }
