@@ -122,28 +122,21 @@
       const mv = document.getElementById("mv");
       const Sound = document.getElementById("Sound");
       const customAR = document.getElementById("customAR");
-
-      // Khởi tạo Web Audio Context và source
       let audioContext = null;
       let audioSource = null;
-
-      // Hàm phát audio bằng Web Audio API với độ trễ 5 giây
       async function playAudioInAR() {
         if (!audioContext) {
           audioContext = new (window.AudioContext ||
             window.webkitAudioContext)();
         }
         try {
-          // Đảm bảo AudioContext được resumed
           if (audioContext.state === "suspended") {
             await audioContext.resume();
           }
-          // Dừng source cũ nếu tồn tại
           if (audioSource) {
             audioSource.stop();
             audioSource = null;
           }
-          // Fetch và phát audio sau 5 giây
           setTimeout(async () => {
             try {
               const response = await fetch(
@@ -155,37 +148,32 @@
               );
               const source = audioContext.createBufferSource();
               source.buffer = audioBuffer;
-              source.loop = true; // Đảm bảo lặp âm thanh
+              source.loop = true;
               source.connect(audioContext.destination);
               source.start();
-              audioSource = source; // Lưu source để quản lý
-              console.log("Audio bắt đầu phát sau 1 giây");
+              audioSource = source;
             } catch (e) {
               console.log("Web Audio API lỗi:", e);
             }
-          }, 1000);
+          });
         } catch (e) {
           console.log("Lỗi khởi tạo AudioContext:", e);
         }
       }
-
-      // Unlock audio và bắt đầu phát khi click nút AR
       customAR.addEventListener("click", async (event) => {
-        event.preventDefault(); // Ngăn hành vi mặc định
+        event.preventDefault();
 
-        // Khởi tạo AudioContext nếu chưa có
         if (!audioContext) {
           audioContext = new (window.AudioContext ||
             window.webkitAudioContext)();
         }
 
         try {
-          // Unlock audio bằng cách play/pause ngắn với <audio>
           Sound.currentTime = 0;
           const playPromise = Sound.play();
           if (playPromise !== undefined) {
             await playPromise;
-            Sound.pause(); // Pause ngay để chờ delay
+            Sound.pause();
           }
         } catch (e) {
           console.log("Unlock audio thất bại:", e);
@@ -193,42 +181,33 @@
             "Vui lòng cho phép âm thanh trong cài đặt Safari để nghe âm thanh!"
           );
         }
-
-        // Phát audio ngay lập tức (ngoài AR) với độ trễ 5s
         try {
           await playAudioInAR();
         } catch (e) {
           console.log("Lỗi phát audio ban đầu:", e);
         }
-
-        // Kích hoạt AR
         try {
           await mv.activateAR();
         } catch (arErr) {
           console.log("Kích hoạt AR thất bại:", arErr);
         }
       });
-
-      // Quản lý audio khi chuyển trạng thái AR
       mv.addEventListener("ar-status", async (e) => {
         const status = e.detail.status;
-        console.log("AR status:", status); // Debug log
+        console.log("AR status:", status);
 
         if (status === "session-started") {
           try {
-            // Đảm bảo AudioContext được resumed
             if (audioContext && audioContext.state === "suspended") {
               await audioContext.resume();
             }
-            // Nếu audio chưa chạy, thử phát lại (với delay 5s)
             if (!audioSource) {
               await playAudioInAR();
             }
-            // Fallback: Thử phát bằng <audio> nếu cần
             setTimeout(async () => {
               try {
                 Sound.currentTime = 0;
-                Sound.volume = 0.7; // Giảm volume
+                Sound.volume = 0.7;
                 const playPromise = Sound.play();
                 if (playPromise !== undefined) {
                   await playPromise;
@@ -240,7 +219,6 @@
             }, 1000);
           } catch (err) {
             console.log("Lỗi phát audio trong AR:", err);
-            // Retry sau 100ms (fallback)
             setTimeout(async () => {
               try {
                 await Sound.play();
@@ -253,17 +231,15 @@
           Sound.pause();
           Sound.currentTime = 0;
           if (audioSource) {
-            audioSource.stop(); // Dừng Web Audio API
+            audioSource.stop();
             audioSource = null;
           }
           if (audioContext) {
-            audioContext.suspend(); // Tiết kiệm tài nguyên
+            audioContext.suspend();
           }
           console.log("Audio dừng khi thoát AR");
         }
       });
-
-      // Xử lý visibility change (khi tab ẩn hoặc app background)
       document.addEventListener("visibilitychange", async () => {
         if (document.hidden) {
           Sound.pause();
@@ -276,12 +252,10 @@
             audioContext.suspend();
           }
         } else {
-          // Resume audio nếu cần
           try {
             if (audioContext && audioContext.state === "suspended") {
               await audioContext.resume();
             }
-            // Chỉ resume nếu đang trong AR hoặc audio đã được kích hoạt trước đó
             if (mv.getStatus && mv.getStatus().status === "session-started") {
               await playAudioInAR();
               await Sound.play();
@@ -291,8 +265,6 @@
           }
         }
       });
-
-      // Thêm touchstart để unlock AudioContext sớm trên iOS
       document.addEventListener(
         "touchstart",
         async () => {
@@ -304,13 +276,13 @@
           if (Sound.paused && !Sound.ended) {
             Sound.play()
               .then(() => {
-                Sound.pause(); // Unlock nhưng không phát ngay
+                Sound.pause();
               })
               .catch((e) => console.log("Touch unlock thất bại:", e));
           }
         },
         { once: true }
-      ); // Chỉ chạy một lần
+      );
     </script>
   </body>
 </html>
