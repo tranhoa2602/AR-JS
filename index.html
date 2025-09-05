@@ -22,11 +22,10 @@
           sans-serif;
         overflow: hidden;
       }
-
       model-viewer {
         width: 100%;
         height: 100%;
-        --ar-button-display: none; /* Ẩn nút mặc định */
+        --ar-button-display: none;
         background: #0b0c10;
       }
 
@@ -75,7 +74,7 @@
       }
 
       .link-btn {
-        background: linear-gradient(135deg, #4dd0ff, #1a73e8);
+        background: linear-gradient(135deg, #ff3b3b, #d81b60);
         color: #fff;
       }
 
@@ -83,40 +82,20 @@
         font-size: 20px;
         transform: translateY(1px);
       }
-
-      /* Thông báo */
-      .notice {
-        position: absolute;
-        top: 12px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        padding: 8px 12px;
-        border-radius: 10px;
-        backdrop-filter: blur(8px);
-        font-size: 13px;
-        line-height: 1.2;
-        z-index: 20;
-      }
-      .hidden {
-        display: none !important;
-      }
     </style>
   </head>
   <body>
     <model-viewer
       id="mv"
-      src="module/source/chibialice.glb"
+      src="module/source/BABY1M.glb"
       ios-src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/ChibiAlice.usdz"
       ar
       autoplay
       camera-controls
       ar-modes="scene-viewer webxr quick-look"
-      ar-scale="auto"
+      ar-scale="Fixed"
       ar-placement="floor"
-      reveal="interaction"
-      alt="3D Astronaut"
+      alt="Chibi Alice"
     >
     </model-viewer>
 
@@ -128,47 +107,182 @@
         class="link-btn"
         onclick="window.open('https://teams.live.com/v2', '_blank')"
       >
-        <span class="btn-icon">🌐</span> Ghé Thăm
+        <span class="btn-icon">▶️</span> Ghé Thăm
       </button>
     </div>
 
-    <div id="notice" class="notice hidden"></div>
+    <audio
+      id="Sound"
+      src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/music.mp3"
+      preload="auto"
+      loop
+    ></audio>
 
     <script>
       const mv = document.getElementById("mv");
+      const Sound = document.getElementById("Sound");
       const customAR = document.getElementById("customAR");
-      const notice = document.getElementById("notice");
-
-      function show(msg, ms = 2500) {
-        notice.textContent = msg;
-        notice.classList.remove("hidden");
-        clearTimeout(show._t);
-        show._t = setTimeout(() => notice.classList.add("hidden"), ms);
-      }
-
-      // Bắt sự kiện click nút AR
-      customAR.addEventListener("click", () => {
+      let audioContext = null;
+      let audioSource = null;
+      async function playAudioInAR() {
+        if (!audioContext) {
+          audioContext = new (window.AudioContext ||
+            window.webkitAudioContext)();
+        }
         try {
-          mv.activateAR();
+          if (audioContext.state === "suspended") {
+            await audioContext.resume();
+          }
+          if (audioSource) {
+            audioSource.stop();
+            audioSource = null;
+          }
+          setTimeout(async () => {
+            try {
+              const response = await fetch(
+                "https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/timo-timo.mp3"
+              );
+              const arrayBuffer = await response.arrayBuffer();
+              const audioBuffer = await audioContext.decodeAudioData(
+                arrayBuffer
+              );
+              const source = audioContext.createBufferSource();
+              source.buffer = audioBuffer;
+              source.loop = true;
+              source.connect(audioContext.destination);
+              source.start();
+              audioSource = source;
+            } catch (e) {
+              console.log("Web Audio API lỗi:", e);
+            }
+          });
         } catch (e) {
-          console.log("Kích hoạt AR lỗi:", e);
-          show("⚠️ Thiết bị không hỗ trợ AR hoặc lỗi kích hoạt.");
+          console.log("Lỗi khởi tạo AudioContext:", e);
+        }
+      }
+      customAR.addEventListener("click", async (event) => {
+        event.preventDefault();
+
+        if (!audioContext) {
+          audioContext = new (window.AudioContext ||
+            window.webkitAudioContext)();
+        }
+
+        try {
+          Sound.currentTime = 0;
+          const playPromise = Sound.play();
+          if (playPromise !== undefined) {
+            await playPromise;
+            Sound.pause();
+          }
+        } catch (e) {
+          console.log("Unlock audio thất bại:", e);
+          alert(
+            "Vui lòng cho phép âm thanh trong cài đặt Safari để nghe âm thanh!"
+          );
+        }
+        try {
+          await playAudioInAR();
+        } catch (e) {
+          console.log("Lỗi phát audio ban đầu:", e);
+        }
+        try {
+          await mv.activateAR();
+        } catch (arErr) {
+          console.log("Kích hoạt AR thất bại:", arErr);
         }
       });
+      mv.addEventListener("ar-status", async (e) => {
+        const status = e.detail.status;
+        console.log("AR status:", status);
 
-      // Log trạng thái AR
-      mv.addEventListener("ar-status", (e) => {
-        console.log("AR status:", e.detail.status);
-        if (e.detail.status === "failed") {
-          show("⚠️ Không thể mở AR. Kiểm tra ARCore / ARKit.");
+        if (status === "session-started") {
+          try {
+            if (audioContext && audioContext.state === "suspended") {
+              await audioContext.resume();
+            }
+            if (!audioSource) {
+              await playAudioInAR();
+            }
+            setTimeout(async () => {
+              try {
+                Sound.currentTime = 0;
+                Sound.volume = 0.7;
+                const playPromise = Sound.play();
+                if (playPromise !== undefined) {
+                  await playPromise;
+                  console.log("Audio đang phát trong AR (HTML audio)");
+                }
+              } catch (err) {
+                console.log("Lỗi phát audio <audio> trong AR:", err);
+              }
+            }, 1000);
+          } catch (err) {
+            console.log("Lỗi phát audio trong AR:", err);
+            setTimeout(async () => {
+              try {
+                await Sound.play();
+              } catch (retryErr) {
+                console.log("Retry audio thất bại:", retryErr);
+              }
+            }, 5100);
+          }
+        } else if (status === "not-presenting") {
+          Sound.pause();
+          Sound.currentTime = 0;
+          if (audioSource) {
+            audioSource.stop();
+            audioSource = null;
+          }
+          if (audioContext) {
+            audioContext.suspend();
+          }
+          console.log("Audio dừng khi thoát AR");
         }
       });
-
-      // Báo khi model không tải được
-      mv.addEventListener("error", (e) => {
-        console.warn("Model Viewer Error:", e.detail);
-        show("⚠️ Lỗi tải model. Kiểm tra lại đường dẫn .glb / .usdz.");
+      document.addEventListener("visibilitychange", async () => {
+        if (document.hidden) {
+          Sound.pause();
+          Sound.currentTime = 0;
+          if (audioSource) {
+            audioSource.stop();
+            audioSource = null;
+          }
+          if (audioContext) {
+            audioContext.suspend();
+          }
+        } else {
+          try {
+            if (audioContext && audioContext.state === "suspended") {
+              await audioContext.resume();
+            }
+            if (mv.getStatus && mv.getStatus().status === "session-started") {
+              await playAudioInAR();
+              await Sound.play();
+            }
+          } catch (e) {
+            console.log("Resume audio thất bại:", e);
+          }
+        }
       });
+      document.addEventListener(
+        "touchstart",
+        async () => {
+          if (!audioContext) {
+            audioContext = new (window.AudioContext ||
+              window.webkitAudioContext)();
+            await audioContext.resume();
+          }
+          if (Sound.paused && !Sound.ended) {
+            Sound.play()
+              .then(() => {
+                Sound.pause();
+              })
+              .catch((e) => console.log("Touch unlock thất bại:", e));
+          }
+        },
+        { once: true }
+      );
     </script>
   </body>
 </html>
