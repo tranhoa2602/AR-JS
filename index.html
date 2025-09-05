@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>AR</title>
+    <title>AR Demo</title>
     <script
       type="module"
       src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
@@ -90,13 +90,12 @@
       src="module/source/BABY1M.glb"
       ios-src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/ChibiAlice.usdz"
       ar
-      autoplay
       camera-controls
-      ar-modes="scene-viewer webxr quick-look"
+      ar-modes="webxr scene-viewer quick-look"
       ar-scale="auto"
-      ar-placement="auto"
-      scale="0.1 0.1 0.1"
       alt="BABY1M"
+      scale="0.3 0.3 0.3"
+      disable-pan
     >
     </model-viewer>
 
@@ -122,6 +121,14 @@
           await mv.activateAR();
         } catch (err) {
           console.log("Kích hoạt AR thất bại:", err);
+        }
+      });
+
+      // Khi vào AR, ép model xuất hiện cố định trước mặt (theo X, Y)
+      mv.addEventListener("ar-status", (event) => {
+        if (event.detail.status === "session-started") {
+          // Đặt model ở trước camera, cách 1.5m
+          mv.setAttribute("position", "0 0 -1.5");
         }
       });
     </script>
