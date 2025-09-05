@@ -92,7 +92,6 @@
       ar-modes="scene-viewer webxr quick-look"
       ar-scale="auto"
       ar-placement="auto"
-      interaction-prompt="when-needed"
       scale="0.2 0.2 0.2"
       alt="BABY1M"
     >
@@ -121,7 +120,7 @@
         } catch (err) {
           console.log("Kích hoạt AR thất bại:", err);
         }
-        // Khi vào AR, ép model xuất hiện cố định trước mặt (theo X, Y)
+      });
       mv.addEventListener("ar-status", (event) => {
         if (event.detail.status === "session-started") {
           // Đặt model ở trước camera, cách 1.5m
