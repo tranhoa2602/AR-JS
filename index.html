@@ -7,13 +7,10 @@
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <title>AR Camera Fixed Model</title>
-
-    <!-- Model Viewer -->
     <script
       type="module"
       src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
     ></script>
-
     <style>
       html,
       body {
@@ -25,10 +22,11 @@
           sans-serif;
         overflow: hidden;
       }
+
       model-viewer {
         width: 100%;
         height: 100%;
-        --ar-button-display: none;
+        --ar-button-display: none; /* Ẩn nút mặc định */
         background: #0b0c10;
       }
 
@@ -57,6 +55,7 @@
         gap: 10px;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         transition: transform 0.2s ease, filter 0.25s ease, box-shadow 0.2s ease;
+        will-change: transform, filter, box-shadow;
         backdrop-filter: blur(12px);
       }
 
@@ -76,7 +75,7 @@
       }
 
       .link-btn {
-        background: linear-gradient(135deg, #ff3b3b, #d81b60);
+        background: linear-gradient(135deg, #4dd0ff, #1a73e8);
         color: #fff;
       }
 
@@ -84,26 +83,43 @@
         font-size: 20px;
         transform: translateY(1px);
       }
+
+      /* Thông báo */
+      .notice {
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 8px 12px;
+        border-radius: 10px;
+        backdrop-filter: blur(8px);
+        font-size: 13px;
+        line-height: 1.2;
+        z-index: 20;
+      }
+      .hidden {
+        display: none !important;
+      }
     </style>
   </head>
   <body>
-    <!-- Model Viewer -->
     <model-viewer
       id="mv"
-      src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/BABY1M.glb"
-      ios-src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/ChibiAlice.usdz"
+      src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+      ios-src="https://modelviewer.dev/shared-assets/models/Astronaut.usdz"
       ar
       autoplay
       camera-controls
       ar-modes="scene-viewer webxr quick-look"
-      ar-scale="fixed"
+      ar-scale="auto"
       ar-placement="floor"
       reveal="interaction"
-      alt="Chibi Alice"
+      alt="3D Astronaut"
     >
     </model-viewer>
 
-    <!-- Custom Buttons -->
     <div class="button-group">
       <button class="ar-btn" id="customAR">
         <span class="btn-icon">🕶️</span> Xem AR
@@ -112,37 +128,46 @@
         class="link-btn"
         onclick="window.open('https://teams.live.com/v2', '_blank')"
       >
-        <span class="btn-icon">▶️</span> Ghé Thăm
+        <span class="btn-icon">🌐</span> Ghé Thăm
       </button>
     </div>
+
+    <div id="notice" class="notice hidden"></div>
 
     <script>
       const mv = document.getElementById("mv");
       const customAR = document.getElementById("customAR");
+      const notice = document.getElementById("notice");
 
-      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const isAndroid = /Android/i.test(navigator.userAgent);
+      function show(msg, ms = 2500) {
+        notice.textContent = msg;
+        notice.classList.remove("hidden");
+        clearTimeout(show._t);
+        show._t = setTimeout(() => notice.classList.add("hidden"), ms);
+      }
 
-      // Kích hoạt AR khi bấm nút
-      customAR.addEventListener("click", async (event) => {
-        event.preventDefault();
-
+      // Bắt sự kiện click nút AR
+      customAR.addEventListener("click", () => {
         try {
-          await mv.activateAR();
-        } catch (arErr) {
-          console.log("Kích hoạt AR thất bại:", arErr);
-          if (isAndroid) {
-            alert(
-              "Thiết bị của bạn chưa cài đặt Google Play Services for AR (ARCore).\nVui lòng tải từ CH Play để sử dụng AR."
-            );
-          } else if (isIOS) {
-            alert(
-              "iOS chỉ hỗ trợ Quick Look (.usdz). Vui lòng thử lại trên Safari."
-            );
-          } else {
-            alert("Thiết bị không hỗ trợ AR.");
-          }
+          mv.activateAR();
+        } catch (e) {
+          console.log("Kích hoạt AR lỗi:", e);
+          show("⚠️ Thiết bị không hỗ trợ AR hoặc lỗi kích hoạt.");
         }
+      });
+
+      // Log trạng thái AR
+      mv.addEventListener("ar-status", (e) => {
+        console.log("AR status:", e.detail.status);
+        if (e.detail.status === "failed") {
+          show("⚠️ Không thể mở AR. Kiểm tra ARCore / ARKit.");
+        }
+      });
+
+      // Báo khi model không tải được
+      mv.addEventListener("error", (e) => {
+        console.warn("Model Viewer Error:", e.detail);
+        show("⚠️ Lỗi tải model. Kiểm tra lại đường dẫn .glb / .usdz.");
       });
     </script>
   </body>
