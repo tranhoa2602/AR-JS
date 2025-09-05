@@ -121,6 +121,12 @@
         } catch (err) {
           console.log("Kích hoạt AR thất bại:", err);
         }
+        // Khi vào AR, ép model xuất hiện cố định trước mặt (theo X, Y)
+      mv.addEventListener("ar-status", (event) => {
+        if (event.detail.status === "session-started") {
+          // Đặt model ở trước camera, cách 1.5m
+          mv.setAttribute("position", "0 0 -1.5");
+        }
       });
     </script>
   </body>
