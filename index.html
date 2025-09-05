@@ -18,8 +18,7 @@
         height: 100%;
         background: #0b0c10;
         color: #fff;
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial,
-          sans-serif;
+        font-family: system-ui, sans-serif;
         overflow: hidden;
       }
       model-viewer {
@@ -54,7 +53,6 @@
         gap: 10px;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         transition: transform 0.2s ease, filter 0.25s ease, box-shadow 0.2s ease;
-        will-change: transform, filter, box-shadow;
         backdrop-filter: blur(12px);
       }
 
@@ -80,7 +78,6 @@
 
       .btn-icon {
         font-size: 20px;
-        transform: translateY(1px);
       }
     </style>
   </head>
@@ -91,11 +88,11 @@
       ios-src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/ChibiAlice.usdz"
       ar
       camera-controls
-      ar-modes="webxr scene-viewer quick-look"
+      ar-modes="scene-viewer webxr quick-look"
       ar-scale="auto"
-      alt="BABY1M"
+      ar-placement="interaction"
       scale="0.3 0.3 0.3"
-      disable-pan
+      alt="BABY1M"
     >
     </model-viewer>
 
@@ -121,14 +118,6 @@
           await mv.activateAR();
         } catch (err) {
           console.log("Kích hoạt AR thất bại:", err);
-        }
-      });
-
-      // Khi vào AR, ép model xuất hiện cố định trước mặt (theo X, Y)
-      mv.addEventListener("ar-status", (event) => {
-        if (event.detail.status === "session-started") {
-          // Đặt model ở trước camera, cách 1.5m
-          mv.setAttribute("position", "0 0 -1.5");
         }
       });
     </script>
