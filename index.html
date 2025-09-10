@@ -121,7 +121,6 @@
           console.log("Kích hoạt AR thất bại:", err);
         }
       });
-
       if (isIOS) {
         customAR.addEventListener("click", () => {
           if (bgm.paused) {
@@ -131,6 +130,12 @@
               .catch((err) =>
                 console.log("Không phát được nhạc trên iOS:", err)
               );
+          }
+        });
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "visible") {
+            bgm.pause();
+            bgm.currentTime = 0;
           }
         });
       } else {
@@ -146,7 +151,6 @@
           }
         });
       }
-
       window.addEventListener("pagehide", () => {
         bgm.pause();
         bgm.currentTime = 0;
