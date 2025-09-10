@@ -128,20 +128,12 @@
       });
 
       if (isIOS) {
-        // iOS: chỉ phát nhạc khi AR bắt đầu
-        mv.addEventListener("message", (event) => {
-          if (event.data && event.data.type === "ar-status") {
-            if (event.data.status === "session-started") {
-              bgm.currentTime = 0;
-              bgm
-                .play()
-                .catch((err) =>
-                  console.log("Không phát được nhạc trên iOS:", err)
-                );
-            } else if (event.data.status === "not-presenting") {
-              bgm.pause();
-              bgm.currentTime = 0;
-            }
+        // iOS: Cho phát nhạc nền luôn
+        document.addEventListener("click", () => {
+          if (bgm.paused) {
+            bgm
+              .play()
+              .catch((err) => console.log("Không phát được nhạc:", err));
           }
         });
       } else {
