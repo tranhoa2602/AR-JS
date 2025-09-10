@@ -139,8 +139,26 @@
           bgm.play().catch((err) => console.log("Không phát được nhạc:", err));
         } else if (event.detail.status === "not-presenting") {
           bgm.pause();
-          bgm.currentTime = 0; // reset về đầu
+          bgm.currentTime = 0;
         }
+      });
+
+      // Thêm kiểm tra khi thoát ra ngoài AR Quick Look (Safari iOS)
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+          // Quay lại web → đảm bảo nhạc đã tắt
+          bgm.pause();
+          bgm.currentTime = 0;
+        } else {
+          // Rời khỏi web → tắt nhạc
+          bgm.pause();
+        }
+      });
+
+      // Trường hợp Safari iOS đóng/mở lại trang
+      window.addEventListener("pagehide", () => {
+        bgm.pause();
+        bgm.currentTime = 0;
       });
     </script>
   </body>
