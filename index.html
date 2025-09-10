@@ -102,20 +102,14 @@
         <span class="btn-icon">▶️</span> Ghé Thăm
       </button>
     </div>
-
-    <!-- Âm thanh nền -->
     <audio id="bgm" src="music/Sound-InPlace.MP3" preload="auto" loop></audio>
 
     <script>
       const mv = document.getElementById("mv");
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
-
-      // iOS yêu cầu người dùng click để unlock audio
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
-
-        // Unlock audio
         bgm
           .play()
           .then(() => {
@@ -130,8 +124,6 @@
           console.log("Kích hoạt AR thất bại:", err);
         }
       });
-
-      // Quản lý phát/tắt nhạc theo trạng thái AR
       mv.addEventListener("ar-status", (event) => {
         if (event.detail.status === "session-started") {
           mv.setAttribute("position", "0 0 -1.5");
@@ -142,20 +134,15 @@
           bgm.currentTime = 0;
         }
       });
-
-      // Thêm kiểm tra khi thoát ra ngoài AR Quick Look (Safari iOS)
       document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") {
-          // Quay lại web → đảm bảo nhạc đã tắt
           bgm.pause();
           bgm.currentTime = 0;
         } else {
-          // Rời khỏi web → tắt nhạc
           bgm.pause();
         }
       });
 
-      // Trường hợp Safari iOS đóng/mở lại trang
       window.addEventListener("pagehide", () => {
         bgm.pause();
         bgm.currentTime = 0;
