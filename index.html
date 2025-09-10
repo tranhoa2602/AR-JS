@@ -83,12 +83,14 @@
       src="module/source/b4.glb"
       ios-src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/ChibiAlice.usdz"
       ar
-      camera-controls
       ar-modes="webxr scene-viewer quick-look"
       ar-scale="auto"
       ar-placement="interaction"
       alt="BABY1M"
       scale="0.2 0.2 0.2"
+      camera-controls
+      camera-orbit="0deg 90deg auto"
+      disable-pan
     >
     </model-viewer>
 
@@ -104,7 +106,7 @@
       </button>
     </div>
 
-    <!-- Nhạc nền -->
+    <!-- Âm thanh -->
     <audio id="bgm" src="music/Sound-InPlace.MP3" preload="auto" loop></audio>
 
     <script>
@@ -112,16 +114,9 @@
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
 
-      let fixedZ = null;
-
-      // Bấm nút "Xem AR" => khởi động nhạc + AR
+      // Kích hoạt AR
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
-
-        // Phát nhạc nền
-        bgm.play().catch((err) => console.log("Không phát được nhạc:", err));
-
-        // Kích hoạt AR
         try {
           await mv.activateAR();
         } catch (err) {
@@ -129,29 +124,18 @@
         }
       });
 
-      // Khi AR session bắt đầu
+      // Điều khiển nhạc theo trạng thái AR
       mv.addEventListener("ar-status", (event) => {
         if (event.detail.status === "session-started") {
-          const pos = mv.getCameraTarget();
-          fixedZ = pos.z;
-        }
-      });
-
-      // Chỉ thay đổi X, Y; giữ Z cố định
-      mv.addEventListener("click", () => {
-        if (!fixedZ) return;
-        const hit = mv.position;
-        mv.position = `${hit.x} ${hit.y} ${fixedZ}`;
-      });
-
-      // Nếu rời tab hoặc đóng trang thì dừng nhạc
-      document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "hidden") {
+          bgm.currentTime = 0;
+          bgm.play().catch((err) => console.log("Không phát được nhạc:", err));
+        } else if (event.detail.status === "not-presenting") {
           bgm.pause();
-        } else {
-          bgm.play().catch(() => {});
+          bgm.currentTime = 0;
         }
       });
+
+      // Nếu rời khỏi trang thì tắt nhạc
       window.addEventListener("pagehide", () => {
         bgm.pause();
         bgm.currentTime = 0;
