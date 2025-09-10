@@ -111,15 +111,15 @@
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
 
-      // iOS yêu cầu người dùng click để cho phép phát nhạc
+      // iOS yêu cầu người dùng click để unlock audio
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
 
-        // "Unlock" âm thanh ngay trong click
+        // Unlock audio
         bgm
           .play()
           .then(() => {
-            bgm.pause(); // tạm dừng, chỉ cần iOS cho phép
+            bgm.pause();
             bgm.currentTime = 0;
           })
           .catch((err) => console.log("Không khởi động được audio:", err));
@@ -131,7 +131,7 @@
         }
       });
 
-      // Khi vào AR
+      // Quản lý phát/tắt nhạc theo trạng thái AR
       mv.addEventListener("ar-status", (event) => {
         if (event.detail.status === "session-started") {
           mv.setAttribute("position", "0 0 -1.5");
@@ -139,6 +139,7 @@
           bgm.play().catch((err) => console.log("Không phát được nhạc:", err));
         } else if (event.detail.status === "not-presenting") {
           bgm.pause();
+          bgm.currentTime = 0; // reset về đầu
         }
       });
     </script>
