@@ -111,9 +111,19 @@
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
 
-      // Khi bấm nút AR → Safari coi như có thao tác hợp lệ
+      // iOS yêu cầu người dùng click để unlock audio
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
+
+        // Unlock audio
+        bgm
+          .play()
+          .then(() => {
+            bgm.pause();
+            bgm.currentTime = 0;
+          })
+          .catch((err) => console.log("Không khởi động được audio:", err));
+
         try {
           await mv.activateAR();
         } catch (err) {
@@ -133,17 +143,19 @@
         }
       });
 
-      // Trường hợp Safari iOS mở AR Quick Look rồi quay lại web
+      // Thêm kiểm tra khi thoát ra ngoài AR Quick Look (Safari iOS)
       document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") {
+          // Quay lại web → đảm bảo nhạc đã tắt
           bgm.pause();
           bgm.currentTime = 0;
         } else {
+          // Rời khỏi web → tắt nhạc
           bgm.pause();
         }
       });
 
-      // Khi đóng tab/trình duyệt
+      // Trường hợp Safari iOS đóng/mở lại trang
       window.addEventListener("pagehide", () => {
         bgm.pause();
         bgm.currentTime = 0;
