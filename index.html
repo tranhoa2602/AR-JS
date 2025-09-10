@@ -28,7 +28,6 @@
         --ar-button-display: none;
         background: #0b0c10;
       }
-
       .button-group {
         position: absolute;
         bottom: 30px;
@@ -38,7 +37,6 @@
         gap: 16px;
         z-index: 10;
       }
-
       .button-group button {
         flex: 1;
         width: 160px;
@@ -57,27 +55,22 @@
         will-change: transform, filter, box-shadow;
         backdrop-filter: blur(12px);
       }
-
       .button-group button:hover {
         transform: translateY(-2px);
         filter: brightness(1.1);
         box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
       }
-
       .button-group button:active {
         transform: scale(0.95);
       }
-
       .ar-btn {
         background: linear-gradient(135deg, #ffd700, #ff8c00);
         color: #1a1a1a;
       }
-
       .link-btn {
         background: linear-gradient(135deg, #ff3b3b, #d81b60);
         color: #fff;
       }
-
       .btn-icon {
         font-size: 20px;
         transform: translateY(1px);
@@ -110,16 +103,27 @@
       </button>
     </div>
 
-    <!-- Thêm âm thanh -->
-    <audio id="bgm" src="music/Sound-InPlace.MP3" preload="auto"></audio>
+    <!-- Âm thanh nền -->
+    <audio id="bgm" src="music/Sound-InPlace.MP3" preload="auto" loop></audio>
 
     <script>
       const mv = document.getElementById("mv");
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
 
+      // iOS yêu cầu người dùng click để cho phép phát nhạc
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
+
+        // "Unlock" âm thanh ngay trong click
+        bgm
+          .play()
+          .then(() => {
+            bgm.pause(); // tạm dừng, chỉ cần iOS cho phép
+            bgm.currentTime = 0;
+          })
+          .catch((err) => console.log("Không khởi động được audio:", err));
+
         try {
           await mv.activateAR();
         } catch (err) {
@@ -127,7 +131,7 @@
         }
       });
 
-      // Khi vào AR, ép model xuất hiện cố định trước mặt (theo X, Y) + phát âm thanh
+      // Khi vào AR
       mv.addEventListener("ar-status", (event) => {
         if (event.detail.status === "session-started") {
           mv.setAttribute("position", "0 0 -1.5");
