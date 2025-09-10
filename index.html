@@ -110,9 +110,13 @@
       </button>
     </div>
 
+    <!-- Thêm âm thanh -->
+    <audio id="bgm" src="music/Sound-InPlace.MP3" preload="auto"></audio>
+
     <script>
       const mv = document.getElementById("mv");
       const customAR = document.getElementById("customAR");
+      const bgm = document.getElementById("bgm");
 
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
@@ -123,11 +127,14 @@
         }
       });
 
-      // Khi vào AR, ép model xuất hiện cố định trước mặt (theo X, Y)
+      // Khi vào AR, ép model xuất hiện cố định trước mặt (theo X, Y) + phát âm thanh
       mv.addEventListener("ar-status", (event) => {
         if (event.detail.status === "session-started") {
-          // Đặt model ở trước camera, cách 1.5m
           mv.setAttribute("position", "0 0 -1.5");
+          bgm.currentTime = 0;
+          bgm.play().catch((err) => console.log("Không phát được nhạc:", err));
+        } else if (event.detail.status === "not-presenting") {
+          bgm.pause();
         }
       });
     </script>
