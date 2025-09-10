@@ -86,7 +86,6 @@
       camera-controls
       ar-modes="webxr scene-viewer quick-look"
       ar-scale="auto"
-      ar-placement="interaction"
       alt="BABY1M"
       scale="0.2 0.2 0.2"
     >
@@ -103,55 +102,38 @@
         <span class="btn-icon">▶️</span> Ghé Thăm
       </button>
     </div>
-
-    <!-- Âm thanh nền -->
     <audio id="bgm" src="music/Sound-InPlace.MP3" preload="auto" loop></audio>
 
     <script>
       const mv = document.getElementById("mv");
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
-
-      let fixedZ = null;
-
-      // Nút "Xem AR"
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
+        bgm
+          .play()
+          .then(() => {
+            bgm.pause();
+            bgm.currentTime = 0;
+          })
+          .catch((err) => console.log("Không khởi động được audio:", err));
+
         try {
           await mv.activateAR();
         } catch (err) {
           console.log("Kích hoạt AR thất bại:", err);
         }
       });
-
-      // Quản lý trạng thái AR
       mv.addEventListener("ar-status", (event) => {
         if (event.detail.status === "session-started") {
-          // Lấy vị trí hiện tại để cố định trục Z
-          const pos = mv.getCameraTarget();
-          fixedZ = pos.z;
-
-          // Đặt model trước mặt
           mv.setAttribute("position", "0 0 -1.5");
-
-          // Phát nhạc
           bgm.currentTime = 0;
           bgm.play().catch((err) => console.log("Không phát được nhạc:", err));
         } else if (event.detail.status === "not-presenting") {
-          // Thoát AR thì tắt nhạc
           bgm.pause();
           bgm.currentTime = 0;
         }
       });
-
-      // Giữ Z cố định, chỉ thay đổi X, Y
-      mv.addEventListener("click", (event) => {
-        if (!fixedZ) return;
-        const hit = mv.position;
-        mv.position = `${hit.x} ${hit.y} ${fixedZ}`;
-      });
-
-      // Safari iOS: khi quay lại web sau Quick Look
       document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") {
           bgm.pause();
@@ -160,8 +142,6 @@
           bgm.pause();
         }
       });
-
-      // Khi đóng tab/trình duyệt
       window.addEventListener("pagehide", () => {
         bgm.pause();
         bgm.currentTime = 0;
