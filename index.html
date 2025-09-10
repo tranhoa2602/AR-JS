@@ -106,18 +106,13 @@
       </button>
     </div>
 
-    <!-- Âm thanh -->
     <audio id="bgm" src="music/Sound-InPlace.MP3" preload="auto" loop></audio>
 
     <script>
       const mv = document.getElementById("mv");
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
-
-      // Kiểm tra có phải iOS không
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-      // Kích hoạt AR
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
         try {
@@ -128,16 +123,17 @@
       });
 
       if (isIOS) {
-        // iOS: Cho phát nhạc nền luôn
-        document.addEventListener("click", () => {
+        customAR.addEventListener("click", () => {
           if (bgm.paused) {
+            bgm.currentTime = 0;
             bgm
               .play()
-              .catch((err) => console.log("Không phát được nhạc:", err));
+              .catch((err) =>
+                console.log("Không phát được nhạc trên iOS:", err)
+              );
           }
         });
       } else {
-        // Android: chỉ phát nhạc khi vào AR
         mv.addEventListener("ar-status", (event) => {
           if (event.detail.status === "session-started") {
             bgm.currentTime = 0;
@@ -151,7 +147,6 @@
         });
       }
 
-      // Tắt nhạc khi rời khỏi trang
       window.addEventListener("pagehide", () => {
         bgm.pause();
         bgm.currentTime = 0;
