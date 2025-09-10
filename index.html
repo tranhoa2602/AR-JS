@@ -114,6 +114,8 @@
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
 
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
       // Kích hoạt AR
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
