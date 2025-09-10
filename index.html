@@ -114,6 +114,7 @@
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
 
+      // Kiểm tra có phải iOS không
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
       // Kích hoạt AR
@@ -126,18 +127,31 @@
         }
       });
 
-      // Điều khiển nhạc theo trạng thái AR
-      mv.addEventListener("ar-status", (event) => {
-        if (event.detail.status === "session-started") {
-          bgm.currentTime = 0;
-          bgm.play().catch((err) => console.log("Không phát được nhạc:", err));
-        } else if (event.detail.status === "not-presenting") {
-          bgm.pause();
-          bgm.currentTime = 0;
-        }
-      });
+      if (isIOS) {
+        // iOS: Cho phát nhạc nền luôn
+        document.addEventListener("click", () => {
+          if (bgm.paused) {
+            bgm
+              .play()
+              .catch((err) => console.log("Không phát được nhạc:", err));
+          }
+        });
+      } else {
+        // Android: chỉ phát nhạc khi vào AR
+        mv.addEventListener("ar-status", (event) => {
+          if (event.detail.status === "session-started") {
+            bgm.currentTime = 0;
+            bgm
+              .play()
+              .catch((err) => console.log("Không phát được nhạc:", err));
+          } else if (event.detail.status === "not-presenting") {
+            bgm.pause();
+            bgm.currentTime = 0;
+          }
+        });
+      }
 
-      // Nếu rời khỏi trang thì tắt nhạc
+      // Tắt nhạc khi rời khỏi trang
       window.addEventListener("pagehide", () => {
         bgm.pause();
         bgm.currentTime = 0;
