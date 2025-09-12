@@ -115,14 +115,19 @@
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-      // Đảm bảo animation chạy 1 lần
       mv.addEventListener("load", () => {
         mv.animationLoop = false;
+        const anims = mv.availableAnimations;
+        if (anims && anims.length > 0) {
+          mv.animationName = anims[0];
+        }
+        y;
         mv.play();
       });
-
-      // Nút kích hoạt AR
+      mv.addEventListener("finished", () => {
+        mv.pause();
+        console.log("Animation đã chạy xong 1 lần và dừng lại");
+      });
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
         try {
@@ -131,8 +136,6 @@
           console.log("Kích hoạt AR thất bại:", err);
         }
       });
-
-      // iOS xử lý phát nhạc
       if (isIOS) {
         customAR.addEventListener("click", () => {
           if (bgm.paused) {
