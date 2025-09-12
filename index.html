@@ -78,15 +78,15 @@
     </style>
   </head>
   <body>
+    <!-- iOS sẽ dùng GLB thay vì USDZ để có thể kiểm soát tốt hơn -->
     <model-viewer
       id="mv"
       src="module/source/1M.glb"
-      ios-src="module/source/1M.usdz"
       ar
       autoplay
-      ar-modes="webxr scene-viewer quick-look"
-      ar-scale="auto"
-      ar-placement="interaction"
+      ar-modes="quick-look"
+      ar-scale="fixed"
+      ar-placement="floor"
       alt="BABY1M"
       scale="0.01 0.01 0.01"
       camera-controls
@@ -115,13 +115,61 @@
       const bgm = document.getElementById("bgm");
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
+      // Cấu hình khác nhau cho từng platform
+      function setupForPlatform() {
+        if (isIOS) {
+          console.log("Thiết lập cho iOS");
+          // Thử nhiều cách tiếp cận cho iOS
+
+          // Cách 1: Dùng GLB thay vì USDZ
+          mv.removeAttribute("ios-src");
+
+          // Cách 2: Thiết lập thuộc tính cụ thể cho iOS
+          mv.setAttribute("ar-modes", "quick-look");
+          mv.setAttribute("ar-scale", "fixed");
+          mv.setAttribute("ar-placement", "floor");
+
+          // Cách 3: CSS override
+          mv.style.setProperty("--ar-distance", "1.5m");
+
+          // Cách 4: Thử scale rất nhỏ
+          mv.setAttribute("scale", "0.005 0.005 0.005");
+        } else {
+          console.log("Thiết lập cho Android");
+          // Android hoạt động bình thường
+          mv.setAttribute("ar-modes", "webxr scene-viewer");
+          mv.setAttribute("ar-scale", "auto");
+          mv.setAttribute("ar-placement", "floor");
+          mv.setAttribute("scale", "0.1 0.1 0.1");
+        }
+      }
+
+      // Chạy setup khi DOM ready
+      setupForPlatform();
+
       // Nút mở AR
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
-        try {
-          await mv.activateAR();
-        } catch (err) {
-          console.log("Kích hoạt AR thất bại:", err);
+
+        if (isIOS) {
+          // Thử force lại các thuộc tính trước khi mở AR
+          mv.setAttribute("ar-scale", "fixed");
+          mv.setAttribute("scale", "0.001 0.001 0.001");
+
+          // Delay một chút để đảm bảo thuộc tính được apply
+          setTimeout(async () => {
+            try {
+              await mv.activateAR();
+            } catch (err) {
+              console.log("Kích hoạt AR thất bại:", err);
+            }
+          }, 100);
+        } else {
+          try {
+            await mv.activateAR();
+          } catch (err) {
+            console.log("Kích hoạt AR thất bại:", err);
+          }
         }
       });
 
@@ -145,11 +193,19 @@
             bgm.currentTime = 0;
           }
         });
+
+        // Thêm event listener cho AR status trên iOS
+        mv.addEventListener("ar-status", (event) => {
+          console.log("iOS AR Status:", event.detail.status);
+          if (event.detail.status === "session-started") {
+            console.log("AR started on iOS - scale should be applied");
+          }
+        });
       } else {
         // Android/WebXR
         mv.addEventListener("ar-status", (event) => {
           if (event.detail.status === "session-started") {
-            // Ép model luôn spawn trước mặt (X=0,Y=0,Z=-1.5m)
+            // Ép model luôn spawn trước mặt
             mv.setAttribute("position", "0 0 -1.5");
 
             // Phát nhạc
@@ -169,6 +225,14 @@
       window.addEventListener("pagehide", () => {
         bgm.pause();
         bgm.currentTime = 0;
+      });
+
+      // Debug: Log các thuộc tính khi model load
+      mv.addEventListener("load", () => {
+        console.log("Model loaded");
+        console.log("Current scale:", mv.getAttribute("scale"));
+        console.log("Current ar-scale:", mv.getAttribute("ar-scale"));
+        console.log("Current ar-placement:", mv.getAttribute("ar-placement"));
       });
     </script>
   </body>
