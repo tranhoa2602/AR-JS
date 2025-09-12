@@ -91,7 +91,7 @@
       camera-controls
       camera-orbit="0deg 90deg auto"
       disable-pan
-      autoplay
+      play
       animation-loop="false"
     >
     </model-viewer>
@@ -117,16 +117,11 @@
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
       mv.addEventListener("load", () => {
         mv.animationLoop = false;
-        const anims = mv.availableAnimations;
-        if (anims && anims.length > 0) {
-          mv.animationName = anims[0];
-        }
-        y;
         mv.play();
       });
       mv.addEventListener("finished", () => {
         mv.pause();
-        console.log("Animation đã chạy xong 1 lần và dừng lại");
+        console.log("Animation đã chạy xong và dừng lại");
       });
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
