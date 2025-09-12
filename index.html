@@ -83,8 +83,6 @@
       src="module/source/1M.glb"
       ios-src="module/source/1M.usdc"
       ar
-      autoplay
-      animation-loop="false"
       ar-modes="webxr scene-viewer quick-look"
       ar-scale="auto"
       ar-placement="floor"
@@ -93,6 +91,8 @@
       camera-controls
       camera-orbit="0deg 90deg auto"
       disable-pan
+      autoplay
+      animation-loop="false"
     >
     </model-viewer>
 
@@ -112,13 +112,17 @@
 
     <script>
       const mv = document.getElementById("mv");
+      const customAR = document.getElementById("customAR");
+      const bgm = document.getElementById("bgm");
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      // Đảm bảo animation chạy 1 lần
       mv.addEventListener("load", () => {
         mv.animationLoop = false;
         mv.play();
       });
-      const customAR = document.getElementById("customAR");
-      const bgm = document.getElementById("bgm");
-      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      // Nút kích hoạt AR
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
         try {
@@ -127,6 +131,8 @@
           console.log("Kích hoạt AR thất bại:", err);
         }
       });
+
+      // iOS xử lý phát nhạc
       if (isIOS) {
         customAR.addEventListener("click", () => {
           if (bgm.paused) {
@@ -145,6 +151,7 @@
           }
         });
       } else {
+        // Android + desktop
         mv.addEventListener("ar-status", (event) => {
           if (event.detail.status === "session-started") {
             bgm.currentTime = 0;
@@ -157,6 +164,8 @@
           }
         });
       }
+
+      // Khi rời trang
       window.addEventListener("pagehide", () => {
         bgm.pause();
         bgm.currentTime = 0;
