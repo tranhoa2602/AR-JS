@@ -83,6 +83,7 @@
       src="module/source/1M.glb"
       ios-src="module/source/1M.usdc"
       ar
+      autoplay
       ar-modes="webxr scene-viewer quick-look"
       ar-scale="auto"
       ar-placement="floor"
@@ -110,6 +111,7 @@
 
     <script>
       const mv = document.getElementById("mv");
+      mv.play();
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
