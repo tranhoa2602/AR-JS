@@ -81,7 +81,7 @@
     <model-viewer
       id="mv"
       src="module/source/1M.glb"
-      ios-src="model/source/M1.usdz"
+      ios-src="module/source/M1.usdz"
       ar
       camera-controls
       ar-modes="webxr scene-viewer quick-look"
@@ -128,37 +128,37 @@
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
         try {
-          await mv.activateAR();
+          if (isIOS) {
+            // iOS → mở Quick Look
+            const usdz = mv.getAttribute("ios-src");
+            if (usdz) {
+              bgm.currentTime = 0;
+              bgm.play().catch(() => {});
+              window.location.href = usdz;
+            } else {
+              console.error("Không tìm thấy file .usdz");
+            }
+          } else {
+            // Android/WebXR
+            bgm.currentTime = 0;
+            bgm.play().catch(() => {});
+            await mv.activateAR();
+          }
         } catch (err) {
           console.log("Kích hoạt AR thất bại:", err);
         }
       });
 
-      // Quản lý trạng thái AR
+      // Quản lý trạng thái AR (chỉ Android/WebXR)
       mv.addEventListener("ar-status", (event) => {
         if (event.detail.status === "session-started") {
-          // Lấy vị trí hiện tại để cố định trục Z
           const pos = mv.getCameraTarget();
           fixedZ = pos.z;
-
-          // Đặt model trước mặt
           mv.setAttribute("position", "0 0 -1.5");
-
-          // Phát nhạc
-          bgm.currentTime = 0;
-          bgm.play().catch((err) => console.log("Không phát được nhạc:", err));
         } else if (event.detail.status === "not-presenting") {
-          // Thoát AR thì tắt nhạc
           bgm.pause();
           bgm.currentTime = 0;
         }
-      });
-
-      // Giữ Z cố định, chỉ thay đổi X, Y
-      mv.addEventListener("click", (event) => {
-        if (!fixedZ) return;
-        const hit = mv.position;
-        mv.position = `${hit.x} ${hit.y} ${fixedZ}`;
       });
 
       // Safari iOS: khi quay lại web sau Quick Look
@@ -166,8 +166,6 @@
         if (document.visibilityState === "visible") {
           bgm.pause();
           bgm.currentTime = 0;
-        } else {
-          bgm.pause();
         }
       });
 
