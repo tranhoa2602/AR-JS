@@ -80,19 +80,15 @@
   <body>
     <model-viewer
       id="mv"
-      src="module/source/1M.glb"
-      ios-src="module/source/M1.usdz"
+      src="module/source/b4.glb"
+      ios-src="https://raw.githubusercontent.com/tranhoa2602/AR-JS/main/ChibiAlice.usdz"
       ar
+      camera-controls
       ar-modes="webxr scene-viewer quick-look"
       ar-scale="auto"
-      ar-placement="floor"
+      ar-placement="interaction"
       alt="BABY1M"
       scale="0.2 0.2 0.2"
-      camera-controls
-      camera-orbit="0deg 90deg auto"
-      disable-pan
-      autoplay
-      animation-loop="false"
     >
     </model-viewer>
 
@@ -108,6 +104,7 @@
       </button>
     </div>
 
+    <!-- Âm thanh nền -->
     <audio id="bgm" src="music/Sound-InPlace.MP3" preload="auto" loop></audio>
 
     <script>
@@ -116,11 +113,8 @@
       const bgm = document.getElementById("bgm");
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-      // Đảm bảo animation chạy 1 lần
-      mv.addEventListener("load", () => {
-        mv.animationLoop = false;
-        mv.play();
-      });
+      let fixedX = null;
+      let fixedY = null;
 
       // Nút kích hoạt AR
       customAR.addEventListener("click", async (event) => {
@@ -154,6 +148,11 @@
         // Android + desktop
         mv.addEventListener("ar-status", (event) => {
           if (event.detail.status === "session-started") {
+            // Ghi lại X, Y ban đầu để khóa
+            const pos = mv.position?.split(" ").map(Number) || [0, 0, 0];
+            fixedX = pos[0];
+            fixedY = pos[1];
+
             bgm.currentTime = 0;
             bgm
               .play()
@@ -161,38 +160,25 @@
           } else if (event.detail.status === "not-presenting") {
             bgm.pause();
             bgm.currentTime = 0;
+            fixedX = null;
+            fixedY = null;
           }
         });
       }
+
+      // Khóa trục X,Y khi người dùng cố di chuyển
+      mv.addEventListener("move", () => {
+        if (fixedX !== null && fixedY !== null) {
+          const pos = mv.position?.split(" ").map(Number) || [0, 0, 0];
+          // Giữ nguyên X,Y, chỉ cho đổi Z
+          mv.position = `${fixedX} ${fixedY} ${pos[2]}`;
+        }
+      });
 
       // Khi rời trang
       window.addEventListener("pagehide", () => {
         bgm.pause();
         bgm.currentTime = 0;
-      });
-
-      // ===== Khóa trục X, Y =====
-      let fixedX = null;
-      let fixedY = null;
-
-      mv.addEventListener("ar-status", (event) => {
-        if (event.detail.status === "session-started") {
-          const pos = mv.scene?.position;
-          if (pos) {
-            fixedX = pos.x;
-            fixedY = pos.y;
-          }
-        }
-      });
-
-      mv.addEventListener("scene-graph-ready", () => {
-        mv.scene.addEventListener("frame", () => {
-          if (fixedX !== null && fixedY !== null) {
-            const pos = mv.scene.position;
-            pos.x = fixedX; // giữ nguyên X
-            pos.y = fixedY; // giữ nguyên Y
-          }
-        });
       });
     </script>
   </body>
