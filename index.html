@@ -114,8 +114,6 @@
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-      // Nút mở AR
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
         try {
@@ -124,8 +122,6 @@
           console.log("Kích hoạt AR thất bại:", err);
         }
       });
-
-      // iOS xử lý nhạc khi mở AR
       if (isIOS) {
         customAR.addEventListener("click", () => {
           if (bgm.paused) {
@@ -137,8 +133,6 @@
               );
           }
         });
-
-        // Khi thoát Quick Look → tab hiện lại → tắt nhạc
         document.addEventListener("visibilitychange", () => {
           if (document.visibilityState === "visible") {
             bgm.pause();
@@ -146,26 +140,19 @@
           }
         });
       } else {
-        // Android/WebXR
         mv.addEventListener("ar-status", (event) => {
           if (event.detail.status === "session-started") {
-            // Ép model luôn spawn trước mặt (X=0,Y=0,Z=-1.5m)
             mv.setAttribute("position", "0 0 -1.5");
-
-            // Phát nhạc
             bgm.currentTime = 0;
             bgm
               .play()
               .catch((err) => console.log("Không phát được nhạc:", err));
           } else if (event.detail.status === "not-presenting") {
-            // Thoát AR → tắt nhạc
             bgm.pause();
             bgm.currentTime = 0;
           }
         });
       }
-
-      // Dự phòng: khi rời trang
       window.addEventListener("pagehide", () => {
         bgm.pause();
         bgm.currentTime = 0;
