@@ -81,16 +81,14 @@
     <model-viewer
       id="mv"
       src="module/source/1M.glb"
-      ios-src="module/source/1M.usdc"
+      ios-src="model/source/M1.usdz"
       ar
+      camera-controls
       ar-modes="webxr scene-viewer quick-look"
       ar-scale="auto"
-      ar-placement="floor"
+      ar-placement="interaction"
       alt="BABY1M"
       scale="0.2 0.2 0.2"
-      camera-controls
-      camera-orbit="0deg 90deg auto"
-      disable-pan
     >
     </model-viewer>
 
@@ -106,6 +104,7 @@
       </button>
     </div>
 
+    <!-- Âm thanh nền -->
     <audio id="bgm" src="music/Sound-InPlace.MP3" preload="auto" loop></audio>
 
     <script>
@@ -113,13 +112,19 @@
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
       let fixedZ = null;
+
       mv.addEventListener("load", () => {
+        mv.animationLoop = false;
         mv.play({ repetitions: 1 });
       });
+
       mv.addEventListener("finished", () => {
         console.log("Hoạt ảnh đã chạy xong và dừng lại");
       });
+
+      // Nút "Xem AR"
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
         try {
@@ -129,47 +134,44 @@
         }
       });
 
-      if (isIOS) {
-        customAR.addEventListener("click", () => {
-          if (bgm.paused) {
-            bgm.currentTime = 0;
-            bgm
-              .play()
-              .catch((err) =>
-                console.log("Không phát được nhạc trên iOS:", err)
-              );
-          }
-        });
+      // Quản lý trạng thái AR
+      mv.addEventListener("ar-status", (event) => {
+        if (event.detail.status === "session-started") {
+          // Lấy vị trí hiện tại để cố định trục Z
+          const pos = mv.getCameraTarget();
+          fixedZ = pos.z;
 
-        document.addEventListener("visibilitychange", () => {
-          if (document.visibilityState === "visible") {
-            bgm.pause();
-            bgm.currentTime = 0;
-          }
-        });
-      } else {
-        mv.addEventListener("ar-status", (event) => {
-          if (event.detail.status === "session-started") {
-            const pos = mv.getCameraTarget();
-            fixedZ = pos.z;
-            mv.setAttribute("position", "0 0 -1.5");
+          // Đặt model trước mặt
+          mv.setAttribute("position", "0 0 -1.5");
 
-            bgm.currentTime = 0;
-            bgm
-              .play()
-              .catch((err) => console.log("Không phát được nhạc:", err));
-          } else if (event.detail.status === "not-presenting") {
-            bgm.pause();
-            bgm.currentTime = 0;
-          }
-        });
-        mv.addEventListener("click", () => {
-          if (fixedZ !== null) {
-            const pos = mv.position;
-            mv.position = `${pos.x} ${pos.y} ${fixedZ}`;
-          }
-        });
-      }
+          // Phát nhạc
+          bgm.currentTime = 0;
+          bgm.play().catch((err) => console.log("Không phát được nhạc:", err));
+        } else if (event.detail.status === "not-presenting") {
+          // Thoát AR thì tắt nhạc
+          bgm.pause();
+          bgm.currentTime = 0;
+        }
+      });
+
+      // Giữ Z cố định, chỉ thay đổi X, Y
+      mv.addEventListener("click", (event) => {
+        if (!fixedZ) return;
+        const hit = mv.position;
+        mv.position = `${hit.x} ${hit.y} ${fixedZ}`;
+      });
+
+      // Safari iOS: khi quay lại web sau Quick Look
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+          bgm.pause();
+          bgm.currentTime = 0;
+        } else {
+          bgm.pause();
+        }
+      });
+
+      // Khi đóng tab/trình duyệt
       window.addEventListener("pagehide", () => {
         bgm.pause();
         bgm.currentTime = 0;
