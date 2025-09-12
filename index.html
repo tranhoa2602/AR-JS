@@ -83,13 +83,14 @@
       src="module/source/1M.glb"
       ios-src="module/source/M1.usdz"
       ar
-      autoplay
-      camera-controls
       ar-modes="webxr scene-viewer quick-look"
       ar-scale="auto"
       ar-placement="interaction"
       alt="BABY1M"
       scale="0.2 0.2 0.2"
+      camera-controls
+      camera-orbit="0deg 90deg auto"
+      disable-pan
     >
     </model-viewer>
 
@@ -105,7 +106,6 @@
       </button>
     </div>
 
-    <!-- Âm thanh nền -->
     <audio id="bgm" src="music/Sound-InPlace.MP3" preload="auto" loop></audio>
 
     <script>
@@ -114,10 +114,7 @@
       const bgm = document.getElementById("bgm");
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-      let fixedX = null;
-      let fixedY = null;
-
-      // Nút kích hoạt AR
+      // Nút mở AR
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
         try {
@@ -127,7 +124,7 @@
         }
       });
 
-      // iOS xử lý phát nhạc
+      // iOS xử lý nhạc khi mở AR
       if (isIOS) {
         customAR.addEventListener("click", () => {
           if (bgm.paused) {
@@ -139,6 +136,8 @@
               );
           }
         });
+
+        // Khi thoát Quick Look → tab hiện lại → tắt nhạc
         document.addEventListener("visibilitychange", () => {
           if (document.visibilityState === "visible") {
             bgm.pause();
@@ -146,37 +145,26 @@
           }
         });
       } else {
-        // Android + desktop
+        // Android/WebXR
         mv.addEventListener("ar-status", (event) => {
           if (event.detail.status === "session-started") {
-            // Ghi lại X, Y ban đầu để khóa
-            const pos = mv.position?.split(" ").map(Number) || [0, 0, 0];
-            fixedX = pos[0];
-            fixedY = pos[1];
+            // Ép model luôn spawn trước mặt (X=0,Y=0,Z=-1.5m)
+            mv.setAttribute("position", "0 0 -1.5");
 
+            // Phát nhạc
             bgm.currentTime = 0;
             bgm
               .play()
               .catch((err) => console.log("Không phát được nhạc:", err));
           } else if (event.detail.status === "not-presenting") {
+            // Thoát AR → tắt nhạc
             bgm.pause();
             bgm.currentTime = 0;
-            fixedX = null;
-            fixedY = null;
           }
         });
       }
 
-      // Khóa trục X,Y khi người dùng cố di chuyển
-      mv.addEventListener("move", () => {
-        if (fixedX !== null && fixedY !== null) {
-          const pos = mv.position?.split(" ").map(Number) || [0, 0, 0];
-          // Giữ nguyên X,Y, chỉ cho đổi Z
-          mv.position = `${fixedX} ${fixedY} ${pos[2]}`;
-        }
-      });
-
-      // Khi rời trang
+      // Dự phòng: khi rời trang
       window.addEventListener("pagehide", () => {
         bgm.pause();
         bgm.currentTime = 0;
