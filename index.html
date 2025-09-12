@@ -191,24 +191,11 @@
         bgm.currentTime = 0;
       });
 
-      // Thêm event listener để đảm bảo model được đặt đúng vị trí
-      mv.addEventListener("load", () => {
-        if (isIOS) {
-          // Đảm bảo model có kích thước phù hợp với iOS
-          const bbox = mv.getBoundingBox();
-          if (bbox) {
-            const maxDim = Math.max(
-              bbox.max.x - bbox.min.x,
-              bbox.max.y - bbox.min.y,
-              bbox.max.z - bbox.min.z
-            );
-            const targetSize = 0.5; // Kích thước mong muốn (mét)
-            const scaleFactor = targetSize / maxDim;
-            mv.setAttribute(
-              "scale",
-              `${scaleFactor} ${scaleFactor} ${scaleFactor}`
-            );
-          }
+      // Thêm xử lý đặc biệt cho iOS Quick Look
+      mv.addEventListener("ar-status", (event) => {
+        if (isIOS && event.detail.status === "session-started") {
+          // Trên iOS, cố gắng reset lại thuộc tính
+          console.log("iOS AR started - attempting to control placement");
         }
       });
     </script>
