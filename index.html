@@ -85,8 +85,8 @@
       ar
       autoplay
       ar-modes="webxr scene-viewer quick-look"
-      ar-scale="auto"
-      ar-placement="interaction"
+      ar-scale="fixed"
+      ar-placement="floor"
       alt="BABY1M"
       scale="0.1 0.1 0.1"
       camera-controls
@@ -150,7 +150,7 @@
         mv.addEventListener("ar-status", (event) => {
           if (event.detail.status === "session-started") {
             // Ép model luôn spawn trước mặt (X=0,Y=0,Z=-1.5m)
-            mv.setAttribute("position", "0 0 2");
+            mv.setAttribute("position", "0 0 1");
 
             // Phát nhạc
             bgm.currentTime = 0;
