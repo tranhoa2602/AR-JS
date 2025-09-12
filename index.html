@@ -88,7 +88,7 @@
       ar-scale="auto"
       ar-placement="interaction"
       alt="BABY1M"
-      scale="0.01 0.01 0.01"
+      scale="0.1 0.1 0.1"
       camera-controls
       camera-orbit="0deg 90deg auto"
       disable-pan
@@ -113,7 +113,9 @@
       const mv = document.getElementById("mv");
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
-      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        mv.setAttribute("ios-src", "module/source/1M-small.usdz");
+      }
 
       // Nút mở AR
       customAR.addEventListener("click", async (event) => {
