@@ -114,11 +114,6 @@
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-      let followCamera = false; // trạng thái bám theo camera
-      let xrSession = null;
-
-      // Kích hoạt AR
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
         try {
@@ -127,8 +122,6 @@
           console.log("Kích hoạt AR thất bại:", err);
         }
       });
-
-      // Xử lý iOS Quick Look
       if (isIOS) {
         customAR.addEventListener("click", () => {
           if (bgm.paused) {
@@ -140,58 +133,25 @@
               );
           }
         });
-        document.addEventListener("visibilitychange", () => {
-          if (document.visibilityState === "visible") {
-            bgm.pause();
-            bgm.currentTime = 0;
-          }
+        window.addEventListener("pagehide", () => {
+          bgm.pause();
+          bgm.currentTime = 0;
         });
       } else {
-        // Android + WebXR
-        mv.addEventListener("ar-status", async (event) => {
+        mv.addEventListener("ar-status", (event) => {
           if (event.detail.status === "session-started") {
+            mv.setAttribute("position", "0 0 -1.5");
             bgm.currentTime = 0;
             bgm
               .play()
               .catch((err) => console.log("Không phát được nhạc:", err));
-
-            // lấy XRSession từ model-viewer
-            xrSession = mv.xrSession;
-            if (xrSession) {
-              const onXRFrame = (time, frame) => {
-                if (followCamera) {
-                  const refSpace = mv.xrReferenceSpace;
-                  const pose = frame.getViewerPose(refSpace);
-                  if (pose) {
-                    // lấy vị trí camera
-                    const pos = pose.transform.position;
-                    // cập nhật model "đi theo camera" (phía trước 1m)
-                    mv.setAttribute(
-                      "position",
-                      `${pos.x} ${pos.y} ${pos.z - 1}`
-                    );
-                  }
-                }
-                xrSession.requestAnimationFrame(onXRFrame);
-              };
-              xrSession.requestAnimationFrame(onXRFrame);
-            }
-          } else if (event.detail.status === "not-presenting") {
+          }
+          if (event.detail.status === "not-presenting") {
             bgm.pause();
             bgm.currentTime = 0;
-            xrSession = null;
           }
         });
       }
-
-      // Giữ màn hình để bật chế độ follow camera
-      document.addEventListener("pointerdown", () => {
-        followCamera = true;
-      });
-      document.addEventListener("pointerup", () => {
-        followCamera = false;
-      });
-
       window.addEventListener("pagehide", () => {
         bgm.pause();
         bgm.currentTime = 0;
