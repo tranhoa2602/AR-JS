@@ -169,33 +169,51 @@
         if (animations && animations.length > 0) {
           const animationName = animations[0];
           mv.animationName = animationName;
+
+          // Disable looping so it stops naturally at the end
+          mv.animationLoop = false;
+
           mv.play(); // start animation
 
           // Wait for animation to be ready and get its duration
           setTimeout(() => {
-            const animationDuration = mv.duration; // This should now give the animation duration
+            const animationDuration = mv.duration;
             console.log("Animation duration:", animationDuration, "seconds");
 
             if (animationDuration && animationDuration > 0) {
-              // Stop just before the animation ends to pause at last frame
-              setTimeout(() => {
-                mv.pause();
-                mv.currentTime = animationDuration; // Set to last frame
-                console.log("Animation paused at last frame");
+              // Set up interval to monitor animation progress
+              const checkInterval = setInterval(() => {
+                const currentTime = mv.currentTime;
 
-                // Show buttons after animation stops
-                setTimeout(() => {
-                  btnGroup.classList.add("show");
-                }, 500);
-              }, (animationDuration - 0.1) * 1000); // Stop 0.1 seconds before end
+                // When we're very close to the end, stop the animation
+                if (currentTime >= animationDuration - 0.1) {
+                  clearInterval(checkInterval);
+
+                  // Set to exact last frame and then pause
+                  mv.currentTime = animationDuration;
+
+                  // Use a very small delay to ensure the frame is set before pausing
+                  setTimeout(() => {
+                    mv.pause();
+                    console.log(
+                      "Animation paused at last frame, currentTime:",
+                      mv.currentTime
+                    );
+
+                    // Show buttons
+                    setTimeout(() => {
+                      btnGroup.classList.add("show");
+                    }, 500);
+                  }, 50);
+                }
+              }, 100); // Check every 100ms
             } else {
               // Fallback if duration is not available
-              console.log("Could not get animation duration, using fallback");
-              setTimeout(() => {
-                btnGroup.classList.add("show");
-              }, 10000);
+              console.log(
+                "Could not get animation duration, using animation-finished event"
+              );
             }
-          }, 100); // Small delay to ensure animation is loaded
+          }, 100);
 
           console.log("Animation Loop:", mv.animationLoop);
           console.log("Number of animations:", animations.length);
@@ -206,11 +224,14 @@
           }, 1000);
         }
 
-        // Backup listener for animation finished event
+        // Primary method: Use animation-finished event
         mv.addEventListener("animation-finished", () => {
           console.log("Animation finished event fired");
-          mv.pause();
-          btnGroup.classList.add("show");
+          // Don't call pause() here, just show buttons
+          // The animation should naturally stop at the last frame
+          setTimeout(() => {
+            btnGroup.classList.add("show");
+          }, 500);
         });
       });
     </script>
