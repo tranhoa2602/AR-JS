@@ -178,7 +178,7 @@
         const animations = mv.availableAnimations;
         if (animations && animations.length > 0) {
           mv.animationName = animations[0];
-          mv.animationLoop = false; // ép chỉ chạy 1 lần
+          mv.animationLoop = false;
           mv.play();
 
           setTimeout(() => {
@@ -189,6 +189,7 @@
 
       mv.addEventListener("animation-finished", () => {
         mv.pause();
+        mv.currentTime = 0;
       });
     </script>
   </body>
