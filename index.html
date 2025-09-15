@@ -166,33 +166,19 @@
       // Animation load
       mv.addEventListener("load", () => {
         const animations = mv.availableAnimations;
+
         if (animations && animations.length > 0) {
           const animationName = animations[0];
           mv.animationName = animationName;
-          mv.animationLoop = false; // disable looping
-          mv.play(); // start animation
+          mv.animationLoop = false; // tắt loop
+          mv.play(); // chạy animation
 
-          // Monitor and lock at end frame
-          const monitorAnimation = () => {
-            const duration = mv.duration;
-            const currentTime = mv.currentTime;
-
-            if (duration && currentTime >= duration - 0.05) {
-              mv.pause(); // stop animation
-              mv.currentTime = duration; // lock at last frame
-              btnGroup.classList.add("show");
-            } else {
-              requestAnimationFrame(monitorAnimation);
-            }
-          };
-
-          requestAnimationFrame(monitorAnimation);
-
-          // Also use clean animation-finished event
+          // Khi animation kết thúc
           mv.addEventListener("animation-finished", () => {
-            mv.pause();
-            mv.currentTime = mv.duration;
-            btnGroup.classList.add("show");
+            mv.pause(); // dừng hẳn
+            mv.currentTime = mv.duration; // khoá ở cuối frame
+            btnGroup.classList.add("show"); // hiện nút nếu muốn
+            console.log("Animation stopped at last frame");
           });
         } else {
           console.log("Không tìm thấy animation trong mô hình.");
