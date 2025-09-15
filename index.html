@@ -102,14 +102,7 @@
       camera-controls
       interaction-prompt="none"
       animation-loop="false"
-      <!--
-      chỉ
-      chạy
-      1
-      lần
-      --
     >
-      >
     </model-viewer>
 
     <div class="button-group" id="btnGroup">
@@ -188,13 +181,17 @@
         if (animations && animations.length > 0) {
           mv.animationName = animations[0];
           mv.play();
+
+          // Sau 10s thì hiện nút
+          setTimeout(() => {
+            btnGroup.classList.add("show");
+          }, 10000);
         }
       });
 
-      // Khi animation kết thúc -> hiện nút
+      // Khi animation kết thúc -> dừng hẳn
       mv.addEventListener("animation-finished", () => {
-        mv.pause();
-        btnGroup.classList.add("show");
+        mv.pause(); // đảm bảo dừng
       });
     </script>
   </body>
