@@ -169,81 +169,37 @@
         if (animations && animations.length > 0) {
           const animationName = animations[0];
           mv.animationName = animationName;
-
-          // Method 1: Disable looping - most reliable
-          mv.animationLoop = false;
-
+          mv.animationLoop = false; // disable looping
           mv.play(); // start animation
 
-          // Method 2: Monitor and lock at end frame
-          let animationEnded = false;
+          // Monitor and lock at end frame
           const monitorAnimation = () => {
-            if (!animationEnded) {
-              const duration = mv.duration;
-              const currentTime = mv.currentTime;
+            const duration = mv.duration;
+            const currentTime = mv.currentTime;
 
-              // When very close to end, lock it there
-              if (duration && currentTime >= duration - 0.05) {
-                animationEnded = true;
-                mv.currentTime = duration; // Lock to last frame
-
-                // Method 3: Set playback rate to 0 instead of pause
-                mv.playbackRate = 0;
-
-                console.log(
-                  "Animation locked at last frame using playbackRate = 0"
-                );
-
-                // Show buttons
-                setTimeout(() => {
-                  btnGroup.classList.add("show");
-                }, 500);
-              } else {
-                requestAnimationFrame(monitorAnimation);
-              }
+            if (duration && currentTime >= duration - 0.05) {
+              mv.pause(); // stop animation
+              mv.currentTime = duration; // lock at last frame
+              btnGroup.classList.add("show");
+            } else {
+              requestAnimationFrame(monitorAnimation);
             }
           };
 
-          // Start monitoring after a small delay
-          setTimeout(() => {
-            requestAnimationFrame(monitorAnimation);
-          }, 100);
+          requestAnimationFrame(monitorAnimation);
 
-          console.log("Animation Loop:", mv.animationLoop);
-          console.log("Number of animations:", animations.length);
+          // Also use clean animation-finished event
+          mv.addEventListener("animation-finished", () => {
+            mv.pause();
+            mv.currentTime = mv.duration;
+            btnGroup.classList.add("show");
+          });
         } else {
           console.log("Không tìm thấy animation trong mô hình.");
           setTimeout(() => {
             btnGroup.classList.add("show");
           }, 1000);
         }
-
-        // Method 4: Use animation-finished event (cleanest approach)
-        mv.addEventListener("animation-finished", () => {
-          console.log("Animation finished - naturally stopped at last frame");
-          // Animation automatically stops at last frame when animationLoop = false
-          // No need to call pause() or manipulate currentTime
-
-          setTimeout(() => {
-            btnGroup.classList.add("show");
-          }, 500);
-        });
-
-        // Method 5: Alternative - use timeupdate event to maintain position
-        mv.addEventListener("timeupdate", (event) => {
-          const duration = mv.duration;
-          const currentTime = mv.currentTime;
-
-          // If we're at or past the end, lock position
-          if (duration && currentTime >= duration) {
-            mv.currentTime = duration;
-            // Optionally set playback rate to 0 to completely stop
-            if (mv.playbackRate !== 0) {
-              mv.playbackRate = 0;
-              console.log("Animation stopped via timeupdate event");
-            }
-          }
-        });
       });
     </script>
   </body>
