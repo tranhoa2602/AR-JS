@@ -191,7 +191,6 @@
       mv.addEventListener("load", () => {
         const animations = mv.availableAnimations;
         if (animations && animations.length > 0) {
-          mv.animationName = animations[0];
           mv.animationPlayCount = 1;
           mv.play();
         }
