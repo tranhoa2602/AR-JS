@@ -141,7 +141,6 @@
       } else {
         mv.addEventListener("ar-status", (event) => {
           if (event.detail.status === "session-started") {
-            mv.setAttribute("position", "0 0 -1.5");
             bgm.currentTime = 0;
             bgm
               .play()
