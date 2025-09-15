@@ -9,7 +9,7 @@
     <title>AR Demo</title>
     <script
       type="module"
-      src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"
+      src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
     ></script>
     <style>
       html,
@@ -36,6 +36,8 @@
         display: flex;
         gap: 16px;
         z-index: 10;
+
+        /* Ban đầu ẩn */
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.8s ease, transform 0.8s ease;
@@ -97,7 +99,6 @@
       alt="BABY1M"
       scale="0.5 0.5 0.5"
       camera-controls
-      interaction-prompt="none"
     >
     </model-viewer>
 
@@ -128,7 +129,7 @@
         try {
           await mv.activateAR();
         } catch (err) {
-          console.error("Kích hoạt AR thất bại:", err);
+          console.log("Kích hoạt AR thất bại:", err);
         }
       });
 
@@ -140,7 +141,7 @@
             bgm
               .play()
               .catch((err) =>
-                console.error("Không phát được nhạc trên iOS:", err)
+                console.log("Không phát được nhạc trên iOS:", err)
               );
           }
         });
@@ -158,7 +159,7 @@
             bgm.currentTime = 0;
             bgm
               .play()
-              .catch((err) => console.error("Không phát được nhạc:", err));
+              .catch((err) => console.log("Không phát được nhạc:", err));
           } else if (event.detail.status === "not-presenting") {
             bgm.pause();
             bgm.currentTime = 0;
@@ -171,41 +172,20 @@
         bgm.currentTime = 0;
       });
 
-      mv.addEventListener("load", () => {
-        const animations = mv.availableAnimations;
-        if (animations && animations.length > 0) {
-          mv.animationName = animations[0];
-          mv.animationLoop = false; // Đảm bảo không lặp
-          mv.setAttribute("animation-loop", "false"); // Đồng bộ thuộc tính HTML
-          console.log("Animation Loop:", mv.animationLoop); // Debug
-          mv.play();
+      modelViewer.addEventListener("load", () => {
+        const animation = modelViewer.animationPlayState;
+        const player = modelViewer.animationController;
+        modelViewer.play({ repetitions: 1 });
 
-          setTimeout(() => {
-            btnGroup.classList.add("show");
-          }, 10000);
-        } else {
-          console.log("Không tìm thấy animation trong mô hình.");
-          setTimeout(() => {
-            btnGroup.classList.add("show");
-          }, 1000); // Hiển thị nút sớm hơn nếu không có animation
-        }
+        setTimeout(() => {
+          btnGroup.classList.add("show");
+        }, 10000);
       });
-
-      mv.addEventListener("animation-finished", () => {
-        console.log("Animation đã hoàn thành.");
-        mv.pause();
-        mv.currentTime = 0;
-        mv.animationName = null; // Xóa animation để ngăn phát lại
-        mv.setAttribute("animation-loop", "false"); // Đảm bảo thuộc tính không bị thay đổi
-      });
-
-      // Debug trạng thái animation
-      mv.addEventListener("play", () => {
-        console.log("Animation đang phát:", mv.animationName);
-      });
-
-      mv.addEventListener("pause", () => {
-        console.log("Animation đã tạm dừng:", mv.animationName);
+      modelViewer.addEventListener("load", () => {
+        const { mixer } = modelViewer;
+        mixer._actions.forEach((action) => {
+          action.setLoop(THREE.LoopOnce, 1); // play only once
+        });
       });
     </script>
   </body>
