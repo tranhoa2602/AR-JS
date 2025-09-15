@@ -193,6 +193,11 @@
             btnGroup.classList.add("show");
           }, 1000);
         }
+
+        mv.addEventListener("animation-finished", () => {
+          // animation automatically stops at last frame
+          console.log("Animation finished, stopped at last frame");
+        });
       });
     </script>
   </body>
