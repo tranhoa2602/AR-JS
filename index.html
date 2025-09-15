@@ -176,8 +176,8 @@
           // Ép dừng sau khi animation hoàn thành (giả sử animation kéo dài 5 giây)
           setTimeout(() => {
             mv.pause();
-            mv.currentTime = 0;
-            mv.animationName = null;
+            mv.currentTime = animations.length;
+            mv.animationName = animations[0];
             console.log("Ép dừng animation sau 5 giây.");
           }, 10000);
 
