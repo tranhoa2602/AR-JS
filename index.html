@@ -193,8 +193,9 @@
       mv.addEventListener("load", () => {
         const animations = mv.availableAnimations;
         if (animations && animations.length > 0) {
-          mv.animationName = animations[0];
-          mv.play({ repetitions: 1 });
+          mv.animationName = animations[0]; // chọn animation đầu tiên
+          mv.animationPlayCount = 1; // chỉ chạy 1 lần
+          mv.play(); // bắt đầu chạy
         }
 
         setTimeout(() => {
