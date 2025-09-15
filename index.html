@@ -2,167 +2,207 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
-    <title>AR Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AR Demo + Drag + BGM</title>
     <script
       type="module"
       src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
     ></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/webxr/ARButton.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/loaders/GLTFLoader.js"></script>
     <style>
       html,
       body {
         margin: 0;
         height: 100%;
         background: #0b0c10;
-        color: #fff;
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial,
-          sans-serif;
-        overflow: hidden;
       }
-      model-viewer {
+      model-viewer,
+      canvas {
         width: 100%;
         height: 100%;
-        --ar-button-display: none;
-        background: #0b0c10;
       }
       .button-group {
         position: absolute;
-        bottom: 30px;
+        bottom: 20px;
         left: 50%;
         transform: translateX(-50%);
         display: flex;
-        gap: 16px;
-        z-index: 10;
+        gap: 12px;
+        z-index: 20;
       }
       .button-group button {
-        flex: 1;
-        width: 160px;
-        padding: 14px 20px;
+        padding: 12px 18px;
+        border-radius: 12px;
         border: none;
-        border-radius: 16px;
         font-weight: 600;
-        font-size: 15px;
         cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-        transition: transform 0.2s ease, filter 0.25s ease, box-shadow 0.2s ease;
-        will-change: transform, filter, box-shadow;
-        backdrop-filter: blur(12px);
-      }
-      .button-group button:hover {
-        transform: translateY(-2px);
-        filter: brightness(1.1);
-        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
-      }
-      .button-group button:active {
-        transform: scale(0.95);
       }
       .ar-btn {
-        background: linear-gradient(135deg, #ffd700, #ff8c00);
-        color: #1a1a1a;
+        background: gold;
       }
-      .link-btn {
-        background: linear-gradient(135deg, #ff3b3b, #d81b60);
+      .drag-btn {
+        background: #4caf50;
         color: #fff;
-      }
-      .btn-icon {
-        font-size: 20px;
-        transform: translateY(1px);
       }
     </style>
   </head>
   <body>
+    <!-- model-viewer -->
     <model-viewer
       id="mv"
       src="module/source/1M.glb"
       ios-src="module/source/1M.usdz"
       ar
-      autoplay
       ar-modes="webxr scene-viewer quick-look"
-      ar-scale="auto"
-      ar-placement="floor"
-      alt="BABY1M"
-      scale="0.5 0.5 0.5"
       camera-controls
-      camera-orbit="0deg 90deg auto"
-    >
-    </model-viewer>
+      alt="Demo AR"
+      style="display: block"
+    ></model-viewer>
 
+    <!-- Nút -->
     <div class="button-group">
-      <button class="ar-btn" id="customAR">
-        <span class="btn-icon">🕶️</span> Xem AR
-      </button>
-      <button
-        class="link-btn"
-        onclick="window.open('https://store.epicgames.com/vi', '_blank')"
-      >
-        <span class="btn-icon">▶️</span> Ghé Thăm
-      </button>
+      <button class="ar-btn" id="customAR">Xem AR (Scene Viewer)</button>
+      <button class="drag-btn" id="dragMode">AR Kéo Thả (WebXR)</button>
     </div>
 
+    <!-- Âm thanh nền -->
     <audio id="bgm" src="music/Sound-InPlace.MP3" preload="auto" loop></audio>
 
     <script>
       const mv = document.getElementById("mv");
-      const customAR = document.getElementById("customAR");
+      const arBtn = document.getElementById("customAR");
+      const dragBtn = document.getElementById("dragMode");
       const bgm = document.getElementById("bgm");
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-      // Nút kích hoạt AR
-      customAR.addEventListener("click", async (event) => {
-        event.preventDefault();
+      // Bật nhạc
+      function playBgm() {
+        bgm.currentTime = 0;
+        bgm.play().catch((err) => console.log("Không phát được nhạc:", err));
+      }
+      // Tắt nhạc
+      function stopBgm() {
+        bgm.pause();
+        bgm.currentTime = 0;
+      }
+
+      // AR với Scene Viewer / Quick Look
+      arBtn.addEventListener("click", async () => {
         try {
           await mv.activateAR();
-        } catch (err) {
-          console.log("Kích hoạt AR thất bại:", err);
+        } catch (e) {
+          console.log("AR fail:", e);
         }
       });
 
-      // Xử lý iOS
       if (isIOS) {
-        customAR.addEventListener("click", () => {
-          if (bgm.paused) {
-            bgm.currentTime = 0;
-            bgm
-              .play()
-              .catch((err) =>
-                console.log("Không phát được nhạc trên iOS:", err)
-              );
-          }
-        });
-
+        // iOS: bật nhạc khi mở Quick Look
+        arBtn.addEventListener("click", () => playBgm());
         document.addEventListener("visibilitychange", () => {
-          if (document.visibilityState === "visible") {
-            bgm.pause();
-            bgm.currentTime = 0;
-          }
+          if (document.visibilityState === "visible") stopBgm();
         });
       } else {
-        // Android & WebXR
+        // Android & Web
         mv.addEventListener("ar-status", (event) => {
           if (event.detail.status === "session-started") {
-            bgm.currentTime = 0;
-            bgm
-              .play()
-              .catch((err) => console.log("Không phát được nhạc:", err));
+            playBgm();
           } else if (event.detail.status === "not-presenting") {
-            bgm.pause();
-            bgm.currentTime = 0;
+            stopBgm();
           }
         });
       }
 
       // Khi thoát trang
-      window.addEventListener("pagehide", () => {
-        bgm.pause();
-        bgm.currentTime = 0;
+      window.addEventListener("pagehide", stopBgm);
+
+      // WebXR Drag Mode
+      dragBtn.addEventListener("click", () => {
+        mv.style.display = "none"; // Ẩn model-viewer
+        startWebXRDrag();
+        playBgm(); // bật nhạc khi vào drag AR
       });
+
+      function startWebXRDrag() {
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera();
+        const renderer = new THREE.WebGLRenderer({
+          antialias: true,
+          alpha: true,
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.xr.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        document.body.appendChild(THREE.ARButton.createButton(renderer));
+
+        const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
+        scene.add(light);
+
+        const loader = new THREE.GLTFLoader();
+        let model,
+          hitTestSource = null,
+          dragging = false;
+
+        loader.load("module/source/1M.glb", (gltf) => {
+          model = gltf.scene;
+          model.scale.set(0.5, 0.5, 0.5);
+          model.visible = false;
+          scene.add(model);
+        });
+
+        renderer.setAnimationLoop((timestamp, frame) => {
+          if (frame) {
+            const refSpace = renderer.xr.getReferenceSpace();
+            const session = renderer.xr.getSession();
+
+            if (!hitTestSource) {
+              session.requestReferenceSpace("viewer").then((space) => {
+                session
+                  .requestHitTestSource({ space })
+                  .then((src) => (hitTestSource = src));
+              });
+              session.addEventListener("end", () => {
+                hitTestSource = null;
+                stopBgm(); // Tắt nhạc khi thoát AR drag
+              });
+            }
+
+            if (hitTestSource && model) {
+              const hitTestResults = frame.getHitTestResults(hitTestSource);
+              if (hitTestResults.length > 0) {
+                const pose = hitTestResults[0].getPose(refSpace);
+                if (!model.visible) {
+                  model.visible = true;
+                  model.position.set(
+                    pose.transform.position.x,
+                    pose.transform.position.y,
+                    pose.transform.position.z
+                  );
+                }
+                if (dragging) {
+                  model.position.set(
+                    pose.transform.position.x,
+                    pose.transform.position.y,
+                    pose.transform.position.z
+                  );
+                }
+              }
+            }
+          }
+          renderer.render(scene, camera);
+        });
+
+        renderer.domElement.addEventListener(
+          "touchstart",
+          () => (dragging = true)
+        );
+        renderer.domElement.addEventListener(
+          "touchend",
+          () => (dragging = false)
+        );
+      }
     </script>
   </body>
 </html>
