@@ -123,6 +123,7 @@
       const btnGroup = document.getElementById("btnGroup");
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
+      // Nút kích hoạt AR
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
         try {
@@ -139,6 +140,7 @@
         }
       });
 
+      // Xử lý âm thanh khi thoát AR hoặc ẩn trang
       document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") {
           bgm.pause();
@@ -161,13 +163,21 @@
         bgm.currentTime = 0;
       });
 
+      // Animation load
       mv.addEventListener("load", () => {
         const animations = mv.availableAnimations;
-        if (animations.length > 0) {
-          mv.animationName = animations[0];
-          mv.play({ repetitions: 1, pingpong: false });
+
+        const mixer = modelViewer.scene.animations ? modelViewer.mixer : null;
+
+        if (mixer) {
+          // Ensure all actions only play once
+          mixer._actions.forEach((action) => {
+            action.setLoop(THREE.LoopOnce, 1);
+            action.clampWhenFinished = true; // stop on last frame
+          });
         }
 
+        // Hiện nút sau 10s
         setTimeout(() => {
           btnGroup.classList.add("show");
         }, 10000);
