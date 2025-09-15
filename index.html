@@ -118,6 +118,7 @@
 
     <script>
       const mv = document.getElementById("mv");
+      const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
       const btnGroup = document.getElementById("btnGroup");
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -163,15 +164,10 @@
       mv.addEventListener("load", () => {
         const animations = mv.availableAnimations;
         if (animations.length > 0) {
-          const animationName = animations[0];
-          mv.animationName = animationName;
-          mv.play();
-          const duration = mv.getAnimationDuration(animationName);
-          setTimeout(() => {
-            mv.pause();
-            mv.currentTime = duration;
-          }, duration * 1000);
+          mv.animationName = animations[0];
+          mv.play({ repetitions: 1, pingpong: false });
         }
+
         setTimeout(() => {
           btnGroup.classList.add("show");
         }, 10000);
