@@ -168,6 +168,7 @@
         if (mv.availableAnimations.length > 0) {
           animationName = mv.availableAnimations[0];
           mv.animationName = animationName;
+          mv.play();
 
           // Get duration of animation in seconds
           animationDuration = mv.getAnimationDuration(animationName);
