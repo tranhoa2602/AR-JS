@@ -167,25 +167,26 @@
       mv.addEventListener("load", () => {
         const animations = mv.availableAnimations;
         if (animations && animations.length > 0) {
-          mv.animationName = animations[0];
-          mv.animationLoop = false;
-          mv.setAttribute("animation-loop", "false");
-          console.log("Animation Loop:", mv.animationLoop);
-          console.log("Number of animations:", animations.length);
-          mv.play();
+          const animationName = animations[0];
+          mv.animationName = animationName;
+          mv.play(); // start animation
 
-          const duration = mv.getAnimationDuration(mv.animationName);
+          const duration = mv.getAnimationDuration(animationName);
 
-          // Stop animation after it finishes
+          // Stop after 1 play
           setTimeout(() => {
             mv.pause();
             mv.currentTime = duration; // stop at last frame
-            console.log("Ép dừng animation sau", duration, "giây.");
+            console.log("Animation dừng sau", duration, "giây.");
           }, duration * 1000);
 
+          // Show buttons after 10s
           setTimeout(() => {
             btnGroup.classList.add("show");
           }, 10000);
+
+          console.log("Animation Loop:", mv.animationLoop);
+          console.log("Number of animations:", animations.length);
         } else {
           console.log("Không tìm thấy animation trong mô hình.");
           setTimeout(() => {
