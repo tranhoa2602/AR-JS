@@ -165,16 +165,16 @@
 
       // Animation load
       mv.addEventListener("load", () => {
-        const animations = mv.availableAnimations;
+        if (mv.availableAnimations.length > 0) {
+          animationName = mv.availableAnimations[0];
+          mv.animationName = animationName;
 
-        const mixer = modelViewer.scene.animations ? modelViewer.mixer : null;
+          // Get duration of animation in seconds
+          animationDuration = mv.getAnimationDuration(animationName);
 
-        if (mixer) {
-          // Ensure all actions only play once
-          mixer._actions.forEach((action) => {
-            action.setLoop(THREE.LoopOnce, 1);
-            action.clampWhenFinished = true; // stop on last frame
-          });
+          // Start manual playback
+          startTime = performance.now();
+          requestAnimationFrame(step);
         }
 
         // Hiện nút sau 10s
@@ -182,6 +182,16 @@
           btnGroup.classList.add("show");
         }, 10000);
       });
+
+      function step(timestamp) {
+        const elapsed = (timestamp - startTime) / 1000; // seconds
+        if (elapsed < animationDuration) {
+          mv.currentTime = elapsed;
+          requestAnimationFrame(step);
+        } else {
+          mv.currentTime = animationDuration; // stop at last frame
+        }
+      }
     </script>
   </body>
 </html>
