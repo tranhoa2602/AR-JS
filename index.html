@@ -169,19 +169,34 @@
         if (animations && animations.length > 0) {
           const animationName = animations[0];
           mv.animationName = animationName;
-
-          // Disable looping so animation plays only once
-          mv.animationLoop = false;
-
           mv.play(); // start animation
 
-          // Show buttons after animation ends or after 10s (whichever is longer)
-          const buttonShowDelay = Math.max(duration * 1000, 10000);
+          // Wait for animation to be ready and get its duration
           setTimeout(() => {
-            btnGroup.classList.add("show");
-          }, buttonShowDelay);
+            const animationDuration = mv.duration; // This should now give the animation duration
+            console.log("Animation duration:", animationDuration, "seconds");
 
-          console.log("Animation duration:", duration, "seconds");
+            if (animationDuration && animationDuration > 0) {
+              // Stop just before the animation ends to pause at last frame
+              setTimeout(() => {
+                mv.pause();
+                mv.currentTime = animationDuration; // Set to last frame
+                console.log("Animation paused at last frame");
+
+                // Show buttons after animation stops
+                setTimeout(() => {
+                  btnGroup.classList.add("show");
+                }, 500);
+              }, (animationDuration - 0.1) * 1000); // Stop 0.1 seconds before end
+            } else {
+              // Fallback if duration is not available
+              console.log("Could not get animation duration, using fallback");
+              setTimeout(() => {
+                btnGroup.classList.add("show");
+              }, 10000);
+            }
+          }, 100); // Small delay to ensure animation is loaded
+
           console.log("Animation Loop:", mv.animationLoop);
           console.log("Number of animations:", animations.length);
         } else {
@@ -191,10 +206,10 @@
           }, 1000);
         }
 
+        // Backup listener for animation finished event
         mv.addEventListener("animation-finished", () => {
-          // animation automatically stops at last frame
-          console.log("Animation finished, stopped at last frame");
-          // Show buttons when animation finishes
+          console.log("Animation finished event fired");
+          mv.pause();
           btnGroup.classList.add("show");
         });
       });
