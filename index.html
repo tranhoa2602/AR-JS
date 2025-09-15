@@ -32,10 +32,20 @@
         position: absolute;
         bottom: 30px;
         left: 50%;
-        transform: translateX(-50%);
+        transform: translateX(-50%) translateY(30px); /* bay lên từ dưới */
         display: flex;
         gap: 16px;
         z-index: 10;
+
+        /* Ban đầu ẩn */
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.8s ease, transform 0.8s ease;
+      }
+      .button-group.show {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateX(-50%) translateY(0);
       }
       .button-group button {
         flex: 1;
@@ -94,7 +104,7 @@
     >
     </model-viewer>
 
-    <div class="button-group">
+    <div class="button-group" id="btnGroup">
       <button class="ar-btn" id="customAR">
         <span class="btn-icon">🕶️</span> Xem AR
       </button>
@@ -112,6 +122,7 @@
       const mv = document.getElementById("mv");
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
+      const btnGroup = document.getElementById("btnGroup");
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
       // Nút kích hoạt AR
@@ -162,6 +173,24 @@
       window.addEventListener("pagehide", () => {
         bgm.pause();
         bgm.currentTime = 0;
+      });
+
+      // Animation chỉ chạy 1 lần, sau đó hiện nút
+      mv.addEventListener("load", () => {
+        const animations = mv.availableAnimations;
+        if (animations && animations.length > 0) {
+          mv.animationName = animations[0];
+          mv.autoplay = true;
+          mv.loop = false; // chỉ chạy 1 lần
+        }
+      });
+
+      mv.addEventListener("animation-finished", () => {
+        btnGroup.classList.add("show");
+      });
+      mv.addEventListener("ar-frame", (event) => {
+        // Đặt model cách camera 1.5m về phía trước
+        mv.position = "0 0 -1.5";
       });
     </script>
   </body>
