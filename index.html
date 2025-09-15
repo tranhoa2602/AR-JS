@@ -178,18 +178,21 @@
         const animations = mv.availableAnimations;
         if (animations && animations.length > 0) {
           mv.animationName = animations[0];
-          mv.animationLoop = false;
           mv.play();
+
+          // Lấy độ dài animation (giây)
+          const duration = mv.getAnimationDuration(animations[0]);
+
+          // Dừng animation sau khi chạy xong 1 lần
+          setTimeout(() => {
+            mv.pause();
+            mv.currentTime = duration; // dừng ở frame cuối
+          }, duration * 1000);
 
           setTimeout(() => {
             btnGroup.classList.add("show");
           }, 10000);
         }
-      });
-
-      mv.addEventListener("animation-finished", () => {
-        mv.pause();
-        mv.currentTime = 0;
       });
     </script>
   </body>
