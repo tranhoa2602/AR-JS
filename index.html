@@ -171,15 +171,31 @@
           const animationName = animations[0];
           mv.animationName = animationName;
           mv.animationLoop = false; // tắt loop
-          mv.play(); // chạy animation
 
-          // Khi animation kết thúc
-          mv.addEventListener("animation-finished", () => {
-            mv.pause(); // dừng hẳn
-            mv.currentTime = mv.duration; // khoá ở cuối frame
-            btnGroup.classList.add("show"); // hiện nút nếu muốn
-            console.log("Animation stopped at last frame");
-          });
+          // Bắt đầu animation
+          mv.play();
+
+          // Theo dõi thời gian animation
+          const checkAnimationEnd = () => {
+            const duration = mv.duration;
+            const currentTime = mv.currentTime;
+
+            if (duration && currentTime >= duration - 0.01) {
+              // Dừng hẳn và khoá ở cuối frame
+              mv.pause();
+              mv.currentTime = duration;
+              console.log("Animation stopped at last frame");
+
+              // Hiện nút sau 0.5s
+              setTimeout(() => {
+                btnGroup.classList.add("show");
+              }, 500);
+            } else {
+              requestAnimationFrame(checkAnimationEnd);
+            }
+          };
+
+          requestAnimationFrame(checkAnimationEnd);
         } else {
           console.log("Không tìm thấy animation trong mô hình.");
           setTimeout(() => {
