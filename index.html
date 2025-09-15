@@ -177,19 +177,8 @@
             const duration = mv.duration;
             const currentTime = mv.currentTime;
 
-            if (duration && currentTime >= duration - 0.01) {
-              // Khoá hẳn ở cuối frame
-              mv.currentTime = duration;
-
-              // Tiếp tục ép mỗi frame để ngăn animation quay lại
-              const stopLoop = () => {
-                mv.currentTime = duration;
-                requestAnimationFrame(stopLoop);
-              };
-              requestAnimationFrame(stopLoop);
-
-              console.log("Animation locked at last frame");
-
+            if (duration && currentTime >= duration - 0.1) {
+              mv.timeScale = 0.0;
               // Hiện nút
               btnGroup.classList.add("show");
             } else {
