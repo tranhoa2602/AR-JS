@@ -169,17 +169,11 @@
         if (animations && animations.length > 0) {
           const animationName = animations[0];
           mv.animationName = animationName;
+
+          // Disable looping so animation plays only once
+          mv.animationLoop = false;
+
           mv.play(); // start animation
-
-          // Get animation duration using the duration property
-          let duration = mv.duration || 5; // fallback to 5 seconds if duration not available
-
-          // Stop after 1 play
-          setTimeout(() => {
-            mv.pause();
-            mv.currentTime = duration; // stop at last frame
-            console.log("Animation dừng sau", duration, "giây.");
-          }, (duration - 1) * 1000);
 
           // Show buttons after animation ends or after 10s (whichever is longer)
           const buttonShowDelay = Math.max(duration * 1000, 10000);
