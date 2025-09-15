@@ -39,7 +39,6 @@
 
         /* Ban đầu ẩn */
         opacity: 0;
-        pointer-events: none;
         transition: opacity 0.8s ease, transform 0.8s ease;
       }
       .button-group.show {
@@ -78,6 +77,7 @@
         color: #1a1a1a;
       }
       .link-btn {
+        display: none;
         background: linear-gradient(135deg, #ff3b3b, #d81b60);
         color: #fff;
       }
@@ -122,8 +122,6 @@
       const bgm = document.getElementById("bgm");
       const btnGroup = document.getElementById("btnGroup");
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-      // Nút kích hoạt AR
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
         try {
@@ -139,8 +137,6 @@
             .catch((err) => console.log("Không phát được nhạc trên iOS:", err));
         }
       });
-
-      // Xử lý âm thanh khi thoát AR hoặc ẩn trang
       document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") {
           bgm.pause();
@@ -162,25 +158,23 @@
         bgm.pause();
         bgm.currentTime = 0;
       });
-
-      // Animation load
       mv.addEventListener("load", () => {
         const animations = mv.availableAnimations;
 
         if (animations && animations.length > 0) {
           mv.animationName = animations[0];
-          mv.animationLoop = false; // tắt loop
-          mv.play(); // bắt đầu animation
-
-          // Theo dõi thời gian và ép currentTime liên tục để khoá cuối
+          mv.animationLoop = false;
+          mv.play();
           const lockAtEnd = () => {
             const duration = mv.duration;
             const currentTime = mv.currentTime;
 
             if (duration && currentTime >= duration - 0.1) {
               mv.timeScale = 0.0;
-              // Hiện nút
-              btnGroup.classList.add("show");
+              btnGroup.querySelector(".ar-btn").style.display = "flex";
+              setTimeout(() => {
+                btnGroup.querySelector(".link-btn").style.display = "flex";
+              }, 10000);
             } else {
               requestAnimationFrame(lockAtEnd);
             }
@@ -189,7 +183,10 @@
           requestAnimationFrame(lockAtEnd);
         } else {
           console.log("Không tìm thấy animation trong mô hình.");
-          setTimeout(() => btnGroup.classList.add("show"), 1000);
+          btnGroup.querySelector(".ar-btn").style.display = "flex";
+          setTimeout(() => {
+            btnGroup.querySelector(".link-btn").style.display = "flex";
+          }, 10000);
         }
       });
     </script>
