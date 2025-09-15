@@ -168,39 +168,31 @@
         const animations = mv.availableAnimations;
 
         if (animations && animations.length > 0) {
-          const animationName = animations[0];
-          mv.animationName = animationName;
+          mv.animationName = animations[0];
           mv.animationLoop = false; // tắt loop
+          mv.play(); // bắt đầu animation
 
-          // Bắt đầu animation
-          mv.play();
-
-          // Theo dõi thời gian animation
-          const checkAnimationEnd = () => {
+          // Theo dõi thời gian để khoá ở cuối
+          const lockAtEnd = () => {
             const duration = mv.duration;
             const currentTime = mv.currentTime;
 
             if (duration && currentTime >= duration - 0.01) {
-              // Dừng hẳn và khoá ở cuối frame
-              mv.pause();
-              mv.currentTime = duration;
+              mv.pause(); // dừng hẳn
+              mv.currentTime = duration; // khoá ở frame cuối
               console.log("Animation stopped at last frame");
 
-              // Hiện nút sau 0.5s
-              setTimeout(() => {
-                btnGroup.classList.add("show");
-              }, 500);
+              // Hiện nút nếu muốn
+              btnGroup.classList.add("show");
             } else {
-              requestAnimationFrame(checkAnimationEnd);
+              requestAnimationFrame(lockAtEnd);
             }
           };
 
-          requestAnimationFrame(checkAnimationEnd);
+          requestAnimationFrame(lockAtEnd);
         } else {
           console.log("Không tìm thấy animation trong mô hình.");
-          setTimeout(() => {
-            btnGroup.classList.add("show");
-          }, 1000);
+          setTimeout(() => btnGroup.classList.add("show"), 1000);
         }
       });
     </script>
