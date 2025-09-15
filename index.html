@@ -179,7 +179,7 @@
             mv.pause();
             mv.currentTime = duration; // stop at last frame
             console.log("Animation dừng sau", duration, "giây.");
-          }, duration * 1000);
+          }, (duration - 1) * 1000);
 
           // Show buttons after animation ends or after 10s (whichever is longer)
           const buttonShowDelay = Math.max(duration * 1000, 10000);
