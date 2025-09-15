@@ -118,13 +118,11 @@
 
     <script>
       const mv = document.getElementById("mv");
-      const modelViewer = document.querySelector("mv");
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
       const btnGroup = document.getElementById("btnGroup");
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-      // Nút kích hoạt AR
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
         try {
@@ -132,61 +130,47 @@
         } catch (err) {
           console.log("Kích hoạt AR thất bại:", err);
         }
+
+        if (isIOS && bgm.paused) {
+          bgm.currentTime = 0;
+          bgm
+            .play()
+            .catch((err) => console.log("Không phát được nhạc trên iOS:", err));
+        }
       });
 
-      // Xử lý iOS
-      if (isIOS) {
-        customAR.addEventListener("click", () => {
-          if (bgm.paused) {
-            bgm.currentTime = 0;
-            bgm
-              .play()
-              .catch((err) =>
-                console.log("Không phát được nhạc trên iOS:", err)
-              );
-          }
-        });
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+          bgm.pause();
+          bgm.currentTime = 0;
+        }
+      });
 
-        document.addEventListener("visibilitychange", () => {
-          if (document.visibilityState === "visible") {
-            bgm.pause();
-            bgm.currentTime = 0;
-          }
-        });
-      } else {
-        // Android & WebXR
-        mv.addEventListener("ar-status", (event) => {
-          if (event.detail.status === "session-started") {
-            bgm.currentTime = 0;
-            bgm
-              .play()
-              .catch((err) => console.log("Không phát được nhạc:", err));
-          } else if (event.detail.status === "not-presenting") {
-            bgm.pause();
-            bgm.currentTime = 0;
-          }
-        });
-      }
+      mv.addEventListener("ar-status", (event) => {
+        if (event.detail.status === "session-started") {
+          bgm.currentTime = 0;
+          bgm.play().catch((err) => console.log("Không phát được nhạc:", err));
+        } else if (event.detail.status === "not-presenting") {
+          bgm.pause();
+          bgm.currentTime = 0;
+        }
+      });
 
       window.addEventListener("pagehide", () => {
         bgm.pause();
         bgm.currentTime = 0;
       });
 
-      modelViewer.addEventListener("load", () => {
-        const animation = modelViewer.animationPlayState;
-        const player = modelViewer.animationController;
-        modelViewer.play({ repetitions: 1 });
+      mv.addEventListener("load", () => {
+        const animations = mv.availableAnimations;
+        if (animations.length > 0) {
+          mv.animationName = animations[0];
+          mv.play({ repetitions: 1, pingpong: false });
+        }
 
         setTimeout(() => {
           btnGroup.classList.add("show");
         }, 10000);
-      });
-      modelViewer.addEventListener("load", () => {
-        const { mixer } = modelViewer;
-        mixer._actions.forEach((action) => {
-          action.setLoop(THREE.LoopOnce, 1);
-        });
       });
     </script>
   </body>
