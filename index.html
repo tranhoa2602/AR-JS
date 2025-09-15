@@ -86,7 +86,7 @@
       autoplay
       ar-modes="webxr scene-viewer quick-look"
       ar-scale="auto"
-      ar-placement="unbounded"
+      ar-placement="floor"
       alt="BABY1M"
       scale="0.5 0.5 0.5"
       camera-controls
@@ -146,6 +146,9 @@
         // Android & WebXR
         mv.addEventListener("ar-status", (event) => {
           if (event.detail.status === "session-started") {
+            // Đặt model luôn trước mặt camera (chỉ WebXR)
+            mv.setAttribute("position", "0 0 -1");
+
             bgm.currentTime = 0;
             bgm
               .play()
