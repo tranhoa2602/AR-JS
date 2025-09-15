@@ -163,16 +163,14 @@
         bgm.currentTime = 0;
       });
 
-      // Animation load
       mv.addEventListener("load", () => {
         const animations = mv.availableAnimations;
 
         if (animations && animations.length > 0) {
           mv.animationName = animations[0];
-          mv.animationLoop = false; // tắt loop
-          mv.play(); // bắt đầu animation
+          mv.animationLoop = false;
+          mv.play();
 
-          // Theo dõi thời gian và ép currentTime liên tục để khoá cuối
           const lockAtEnd = () => {
             const duration = mv.duration;
             const currentTime = mv.currentTime;
@@ -189,12 +187,11 @@
           console.log("Không tìm thấy animation trong mô hình.");
         }
 
-        // Hiển thị nút Xem AR ngay và nút Ghé Thăm sau 8 giây
-        btnGroup.classList.add("show"); // Xem AR luôn hiển thị
+        btnGroup.classList.add("show");
         setTimeout(() => {
           visitBtn.style.display = "flex";
           visitBtn.classList.add("show");
-        }, 8000);
+        }, 10000);
       });
     </script>
   </body>
