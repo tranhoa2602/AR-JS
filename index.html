@@ -174,13 +174,14 @@
           console.log("Number of animations:", animations.length);
           mv.play();
 
-          // Ép dừng sau khi animation hoàn thành (giả sử animation kéo dài 5 giây)
+          const duration = mv.getAnimationDuration(animationName);
+
+          // Stop animation after it finishes
           setTimeout(() => {
             mv.pause();
-            mv.currentTime = animations.length;
-            mv.animationName = animations[0];
-            console.log("Ép dừng animation sau 5 giây.");
-          }, (animations.length - 0.05) * 10000);
+            mv.currentTime = duration; // stop at last frame
+            console.log("Ép dừng animation sau", duration, "giây.");
+          }, duration * 1000);
 
           setTimeout(() => {
             btnGroup.classList.add("show");
