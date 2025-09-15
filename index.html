@@ -118,6 +118,7 @@
 
     <script>
       const mv = document.getElementById("mv");
+      const modelViewer = document.querySelector("mv");
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
       const btnGroup = document.getElementById("btnGroup");
@@ -184,7 +185,7 @@
       modelViewer.addEventListener("load", () => {
         const { mixer } = modelViewer;
         mixer._actions.forEach((action) => {
-          action.setLoop(THREE.LoopOnce, 1); // play only once
+          action.setLoop(THREE.LoopOnce, 1);
         });
       });
     </script>
