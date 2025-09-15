@@ -133,6 +133,19 @@
           console.log("Kích hoạt AR thất bại:", err);
         }
       });
+      renderer.domElement.addEventListener("touchmove", (event) => {
+        const touch = event.touches[0];
+        const x = (touch.clientX / window.innerWidth) * 2 - 1;
+        const y = -(touch.clientY / window.innerHeight) * 2 + 1;
+
+        // Raycast từ màn hình vào AR scene
+        raycaster.setFromCamera({ x, y }, camera);
+        const intersects = raycaster.intersectObject(floorPlane);
+
+        if (intersects.length > 0) {
+          model.position.copy(intersects[0].point); // di chuyển model tới chỗ chạm
+        }
+      });
 
       // Xử lý iOS
       if (isIOS) {
