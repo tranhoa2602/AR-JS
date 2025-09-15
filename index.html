@@ -179,7 +179,7 @@
             mv.currentTime = animations.length;
             mv.animationName = animations[0];
             console.log("Ép dừng animation sau 5 giây.");
-          }, 10000);
+          }, animations.length - 200);
 
           setTimeout(() => {
             btnGroup.classList.add("show");
