@@ -93,6 +93,7 @@
       src="module/source/1M.glb"
       ios-src="module/source/1M.usdz"
       ar
+      autoplay
       ar-modes="webxr quick-look"
       ar-scale="auto"
       ar-placement="floor"
@@ -121,7 +122,6 @@
       const mv = document.getElementById("mv");
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
-      const btnGroup = document.getElementById("btnGroup");
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
       // Nút kích hoạt AR
@@ -190,14 +190,15 @@
       mv.addEventListener("load", () => {
         const animations = mv.availableAnimations;
         if (animations && animations.length > 0) {
-          mv.animationPlayCount = 1;
+          mv.animationName = animations[0];
           mv.play();
+          mv.loop = "false";
         }
-
-        setTimeout(() => {
-          btnGroup.classList.add("show");
-        }, 10000);
       });
+
+      setTimeout(() => {
+        btnGroup.classList.add("show");
+      }, 10000);
     </script>
   </body>
 </html>
