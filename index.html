@@ -147,9 +147,6 @@
         // Android & WebXR
         mv.addEventListener("ar-status", (event) => {
           if (event.detail.status === "session-started") {
-            // Đặt model luôn trước mặt camera (chỉ WebXR)
-            mv.setAttribute("position", "0 0 -1");
-
             bgm.currentTime = 0;
             bgm
               .play()
