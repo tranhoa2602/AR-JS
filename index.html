@@ -172,17 +172,25 @@
           mv.animationLoop = false; // tắt loop
           mv.play(); // bắt đầu animation
 
-          // Theo dõi thời gian để khoá ở cuối
+          // Theo dõi thời gian và ép currentTime liên tục để khoá cuối
           const lockAtEnd = () => {
             const duration = mv.duration;
             const currentTime = mv.currentTime;
 
             if (duration && currentTime >= duration - 0.01) {
-              mv.pause(); // dừng hẳn
-              mv.currentTime = duration; // khoá ở frame cuối
-              console.log("Animation stopped at last frame");
+              // Khoá hẳn ở cuối frame
+              mv.currentTime = duration;
 
-              // Hiện nút nếu muốn
+              // Tiếp tục ép mỗi frame để ngăn animation quay lại
+              const stopLoop = () => {
+                mv.currentTime = duration;
+                requestAnimationFrame(stopLoop);
+              };
+              requestAnimationFrame(stopLoop);
+
+              console.log("Animation locked at last frame");
+
+              // Hiện nút
               btnGroup.classList.add("show");
             } else {
               requestAnimationFrame(lockAtEnd);
