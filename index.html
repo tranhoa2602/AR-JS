@@ -170,49 +170,43 @@
           const animationName = animations[0];
           mv.animationName = animationName;
 
-          // Disable looping so it stops naturally at the end
+          // Method 1: Disable looping - most reliable
           mv.animationLoop = false;
 
           mv.play(); // start animation
 
-          // Wait for animation to be ready and get its duration
-          setTimeout(() => {
-            const animationDuration = mv.duration;
-            console.log("Animation duration:", animationDuration, "seconds");
+          // Method 2: Monitor and lock at end frame
+          let animationEnded = false;
+          const monitorAnimation = () => {
+            if (!animationEnded) {
+              const duration = mv.duration;
+              const currentTime = mv.currentTime;
 
-            if (animationDuration && animationDuration > 0) {
-              // Set up interval to monitor animation progress
-              const checkInterval = setInterval(() => {
-                const currentTime = mv.currentTime;
+              // When very close to end, lock it there
+              if (duration && currentTime >= duration - 0.05) {
+                animationEnded = true;
+                mv.currentTime = duration; // Lock to last frame
 
-                // When we're very close to the end, stop the animation
-                if (currentTime >= animationDuration - 0.1) {
-                  clearInterval(checkInterval);
+                // Method 3: Set playback rate to 0 instead of pause
+                mv.playbackRate = 0;
 
-                  // Set to exact last frame and then pause
-                  mv.currentTime = animationDuration;
+                console.log(
+                  "Animation locked at last frame using playbackRate = 0"
+                );
 
-                  // Use a very small delay to ensure the frame is set before pausing
-                  setTimeout(() => {
-                    mv.pause();
-                    console.log(
-                      "Animation paused at last frame, currentTime:",
-                      mv.currentTime
-                    );
-
-                    // Show buttons
-                    setTimeout(() => {
-                      btnGroup.classList.add("show");
-                    }, 500);
-                  }, 50);
-                }
-              }, 100); // Check every 100ms
-            } else {
-              // Fallback if duration is not available
-              console.log(
-                "Could not get animation duration, using animation-finished event"
-              );
+                // Show buttons
+                setTimeout(() => {
+                  btnGroup.classList.add("show");
+                }, 500);
+              } else {
+                requestAnimationFrame(monitorAnimation);
+              }
             }
+          };
+
+          // Start monitoring after a small delay
+          setTimeout(() => {
+            requestAnimationFrame(monitorAnimation);
           }, 100);
 
           console.log("Animation Loop:", mv.animationLoop);
@@ -224,14 +218,31 @@
           }, 1000);
         }
 
-        // Primary method: Use animation-finished event
+        // Method 4: Use animation-finished event (cleanest approach)
         mv.addEventListener("animation-finished", () => {
-          console.log("Animation finished event fired");
-          // Don't call pause() here, just show buttons
-          // The animation should naturally stop at the last frame
+          console.log("Animation finished - naturally stopped at last frame");
+          // Animation automatically stops at last frame when animationLoop = false
+          // No need to call pause() or manipulate currentTime
+
           setTimeout(() => {
             btnGroup.classList.add("show");
           }, 500);
+        });
+
+        // Method 5: Alternative - use timeupdate event to maintain position
+        mv.addEventListener("timeupdate", (event) => {
+          const duration = mv.duration;
+          const currentTime = mv.currentTime;
+
+          // If we're at or past the end, lock position
+          if (duration && currentTime >= duration) {
+            mv.currentTime = duration;
+            // Optionally set playback rate to 0 to completely stop
+            if (mv.playbackRate !== 0) {
+              mv.playbackRate = 0;
+              console.log("Animation stopped via timeupdate event");
+            }
+          }
         });
       });
     </script>
