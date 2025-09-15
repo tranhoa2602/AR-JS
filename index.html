@@ -165,34 +165,32 @@
 
       // Animation load
       mv.addEventListener("load", () => {
-        if (mv.availableAnimations.length > 0) {
-          animationName = mv.availableAnimations[0];
-          mv.animationName = animationName;
+        const animations = mv.availableAnimations;
+        if (animations && animations.length > 0) {
+          mv.animationName = animations[0];
+          mv.animationLoop = false;
+          mv.setAttribute("animation-loop", "false");
+          console.log("Animation Loop:", mv.animationLoop);
           mv.play();
 
-          // Get duration of animation in seconds
-          animationDuration = mv.getAnimationDuration(animationName);
+          // Ép dừng sau khi animation hoàn thành (giả sử animation kéo dài 5 giây)
+          setTimeout(() => {
+            mv.pause();
+            mv.currentTime = 0;
+            mv.animationName = null;
+            console.log("Ép dừng animation sau 5 giây.");
+          }, 10000);
 
-          // Start manual playback
-          startTime = performance.now();
-          requestAnimationFrame(step);
-        }
-
-        // Hiện nút sau 10s
-        setTimeout(() => {
-          btnGroup.classList.add("show");
-        }, 10000);
-      });
-
-      function step(timestamp) {
-        const elapsed = (timestamp - startTime) / 1000; // seconds
-        if (elapsed < animationDuration) {
-          mv.currentTime = elapsed;
-          requestAnimationFrame(step);
+          setTimeout(() => {
+            btnGroup.classList.add("show");
+          }, 10000);
         } else {
-          mv.currentTime = animationDuration; // stop at last frame
+          console.log("Không tìm thấy animation trong mô hình.");
+          setTimeout(() => {
+            btnGroup.classList.add("show");
+          }, 1000);
         }
-      }
+      });
     </script>
   </body>
 </html>
