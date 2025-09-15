@@ -9,7 +9,7 @@
     <title>AR Demo</title>
     <script
       type="module"
-      src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
+      src="https://unpkg.com/@google/model-viewer@4.1.0/dist/model-viewer.min.js"
     ></script>
     <style>
       html,
@@ -179,6 +179,7 @@
         if (animations && animations.length > 0) {
           mv.animationName = animations[0];
           mv.animationLoop = false;
+          console.log("Animation Loop:", mv.animationLoop); // Debug để kiểm tra
           mv.play();
 
           setTimeout(() => {
@@ -190,6 +191,8 @@
       mv.addEventListener("animation-finished", () => {
         mv.pause();
         mv.currentTime = 0;
+        mv.animationName = null; // Ngăn phát lại animation
+        console.log("Animation đã hoàn thành và dừng lại."); // Debug
       });
     </script>
   </body>
