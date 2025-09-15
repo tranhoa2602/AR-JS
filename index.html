@@ -184,10 +184,9 @@
           mv.loop = false; // chỉ chạy 1 lần
         }
 
-        // Sau 14 giây thì hiện nút
         setTimeout(() => {
           btnGroup.classList.add("show");
-        }, 11000);
+        }, 10000);
       });
       mv.addEventListener("ar-frame", (event) => {
         // Đặt model cách camera 1.5m về phía trước
