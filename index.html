@@ -122,6 +122,7 @@
       const mv = document.getElementById("mv");
       const customAR = document.getElementById("customAR");
       const bgm = document.getElementById("bgm");
+      const btnGroup = document.getElementById("btnGroup");
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
       // Nút kích hoạt AR
@@ -192,13 +193,17 @@
         if (animations && animations.length > 0) {
           mv.animationName = animations[0];
           mv.play();
-          mv.loop = "false";
         }
       });
 
-      setTimeout(() => {
+      mv.addEventListener("finished", () => {
         btnGroup.classList.add("show");
-      }, 10000);
+        mv.pause();
+
+        setTimeout(() => {
+          btnGroup.classList.add("show");
+        }, 10000);
+      });
     </script>
   </body>
 </html>
