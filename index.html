@@ -96,7 +96,8 @@
       alt="BABY1M"
       scale="0.3 0.3 0.3"
       camera-controls
-      touch-action="pan-y"
+      camera-orbit="45deg 55deg 2m"
+      touch-action="pan-x pan-y"
     >
     </model-viewer>
 
@@ -156,6 +157,8 @@
         } else if (event.detail.status === "not-presenting") {
           bgm.pause();
           bgm.currentTime = 0;
+          mv.resetTurntableRotation();
+          mv.cameraOrbit = "45deg 55deg 2m";
         }
       });
 
