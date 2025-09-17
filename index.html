@@ -91,12 +91,12 @@
       ios-src="module/source/1M.usdz"
       ar
       ar-modes="webxr quick-look"
-      ar-scale="fixed"
+      ar-scale="auto"
       ar-placement="interaction"
       alt="BABY1M"
       scale="0.1 0.1 0.1"
       camera-controls
-      camera-orbit="45deg 55deg 2m"
+      camera-orbit="100deg 100deg 2m"
       touch-action="pan-x pan-y"
     >
     </model-viewer>
@@ -158,7 +158,7 @@
           bgm.pause();
           bgm.currentTime = 0;
           mv.resetTurntableRotation();
-          mv.cameraOrbit = "45deg 55deg 2m";
+          mv.cameraOrbit = "100deg 100deg 2m";
         }
       });
 
