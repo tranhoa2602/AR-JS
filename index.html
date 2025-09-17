@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>AR Demo - Fixed</title>
+    <title>AR Demo</title>
     <script
       type="module"
       src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"
@@ -82,17 +82,6 @@
         font-size: 20px;
         transform: translateY(1px);
       }
-      .debug-info {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        background: rgba(0, 0, 0, 0.7);
-        padding: 10px;
-        border-radius: 8px;
-        font-size: 12px;
-        z-index: 100;
-        display: none;
-      }
     </style>
   </head>
   <body>
@@ -105,25 +94,16 @@
       ar-scale="fixed"
       ar-placement="wall"
       alt="BABY1M"
-      scale="1.0 1.0 1.0"
+      scale="0.3 0.3 0.3"
       camera-controls
       interaction-prompt="none"
       auto-rotate="false"
     >
     </model-viewer>
 
-    <div class="debug-info" id="debugInfo">
-      <div>AR Status: <span id="arStatus">Not active</span></div>
-      <div>Device: <span id="deviceType"></span></div>
-      <div>AR Modes: <span id="arModes"></span></div>
-    </div>
-
     <div class="button-group" id="btnGroup">
       <button class="ar-btn" id="customAR">
         <span class="btn-icon">🕶️</span> Xem AR
-      </button>
-      <button class="ar-btn" id="debugBtn" style="display: none">
-        <span class="btn-icon">🐛</span> Debug
       </button>
       <button
         class="link-btn"
@@ -143,92 +123,38 @@
       const bgm = document.getElementById("bgm");
       const btnGroup = document.getElementById("btnGroup");
       const visitBtn = document.getElementById("visitBtn");
-      const debugBtn = document.getElementById("debugBtn");
-      const debugInfo = document.getElementById("debugInfo");
-      const arStatus = document.getElementById("arStatus");
-      const deviceType = document.getElementById("deviceType");
-      const arModes = document.getElementById("arModes");
-
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const isAndroid = /Android/i.test(navigator.userAgent);
 
-      // Debug information
-      deviceType.textContent = isIOS ? "iOS" : isAndroid ? "Android" : "Other";
-
-      // Wait for model-viewer to be ready
-      mv.addEventListener("load", () => {
-        arModes.textContent = mv.arModes || "Not available";
-      });
-
-      // Debug button functionality
-      debugBtn.addEventListener("click", () => {
-        debugInfo.style.display =
-          debugInfo.style.display === "none" ? "block" : "none";
-      });
-
-      // AR activation with better error handling
+      // Nút kích hoạt AR
       customAR.addEventListener("click", async (event) => {
         event.preventDefault();
-
         try {
-          // Check if AR is supported
-          if (!mv.canActivateAR) {
-            console.log("AR not supported on this device");
-            alert("AR không được hỗ trợ trên thiết bị này");
-            return;
-          }
-
-          console.log("Attempting to activate AR...");
-          arStatus.textContent = "Starting...";
-
           await mv.activateAR();
-          console.log("AR activated successfully");
         } catch (err) {
-          console.error("AR activation failed:", err);
-          arStatus.textContent = "Failed: " + err.message;
-
-          // Fallback for different devices
-          if (isAndroid) {
-            console.log("Trying Android fallback...");
-            // Force scene-viewer for Android
-            mv.setAttribute("ar-modes", "scene-viewer");
-            try {
-              await mv.activateAR();
-            } catch (fallbackErr) {
-              console.error("Android fallback failed:", fallbackErr);
-            }
-          }
+          console.log("Kích hoạt AR thất bại:", err);
         }
 
-        // Audio handling for iOS
         if (isIOS && bgm.paused) {
           bgm.currentTime = 0;
           bgm
             .play()
-            .catch((err) => console.log("Audio playback failed on iOS:", err));
+            .catch((err) => console.log("Không phát được nhạc trên iOS:", err));
         }
       });
 
-      // Enhanced AR status monitoring
-      mv.addEventListener("ar-status", (event) => {
-        const status = event.detail.status;
-        arStatus.textContent = status;
-        console.log("AR Status changed:", status);
-
-        if (status === "session-started") {
-          console.log("AR session started successfully");
-          bgm.currentTime = 0;
-          bgm.play().catch((err) => console.log("Audio playback failed:", err));
-        } else if (status === "not-presenting") {
-          console.log("AR session ended");
+      // Xử lý âm thanh khi thoát AR hoặc ẩn trang
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
           bgm.pause();
           bgm.currentTime = 0;
         }
       });
 
-      // Audio management
-      document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "visible") {
+      mv.addEventListener("ar-status", (event) => {
+        if (event.detail.status === "session-started") {
+          bgm.currentTime = 0;
+          bgm.play().catch((err) => console.log("Không phát được nhạc:", err));
+        } else if (event.detail.status === "not-presenting") {
           bgm.pause();
           bgm.currentTime = 0;
         }
@@ -239,13 +165,10 @@
         bgm.currentTime = 0;
       });
 
-      // Model loading and animation setup
       mv.addEventListener("load", () => {
-        console.log("Model loaded successfully");
         const animations = mv.availableAnimations;
 
         if (animations && animations.length > 0) {
-          console.log("Available animations:", animations);
           mv.animationName = animations[0];
           mv.animationLoop = false;
           mv.play();
@@ -263,30 +186,14 @@
 
           requestAnimationFrame(lockAtEnd);
         } else {
-          console.log("No animations found in the model");
+          console.log("Không tìm thấy animation trong mô hình.");
         }
 
-        // Show UI elements
         btnGroup.classList.add("show");
-
-        // Show debug button in development
-        if (
-          window.location.hostname === "localhost" ||
-          window.location.hostname === "127.0.0.1"
-        ) {
-          debugBtn.style.display = "flex";
-        }
-
-        // Show visit button after delay
         setTimeout(() => {
           visitBtn.style.display = "flex";
           visitBtn.classList.add("show");
         }, 10000);
-      });
-
-      // Error handling
-      mv.addEventListener("error", (event) => {
-        console.error("Model-viewer error:", event.detail);
       });
     </script>
   </body>
